@@ -1,1 +1,4 @@
 TODO(Checkpoint Requirement 1 of 3): Add team member names and emails.
+Myles Block <mylesblock@techexchange.in>
+Gabriel Bremo <gabremob@techexchange.in>
+Manish Niure <manishniure@techexchange.in>
