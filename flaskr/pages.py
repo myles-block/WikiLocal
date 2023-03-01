@@ -16,13 +16,17 @@ def make_endpoints(app):
     # TODO(Project 1): Implement additional routes according to the project requirements.
     @app.route('/pages')
     def pages():
-        backend= Backend('wiki_info')
+        backend= Backend(info_bucket_name='wiki_info')
         return render_template('pages.html')
 
     @app.route('/about')
     def about():
-        backend = Backend('wiki_info')
+        backend = Backend(info_bucket_name='wiki_info')
         author_images = {'Manish':backend.get_image('manish.jpeg'),
-                        'Gabriel': backend.get_image('manish.jpeg'),
+                        'Gabriel': backend.get_image('gabrielPic.jpg'),
                         'Myles': backend.get_image('manish.jpeg')}
         return render_template('about.html',author_images = author_images)
+    
+    @app.route('/login')
+    def login():
+        return render_template('login.html')

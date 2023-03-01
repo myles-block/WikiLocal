@@ -1,0 +1,20 @@
+{% extends "main.html" %}
+
+{% block title %}
+Sign in
+{% endblock %}
+
+{% block content %}
+<h3>Sign in</h3>
+
+<form method="post" action="/login">
+    <p>Username</p>
+    <input type="text" name="username" placeholder="Your username" required/><br/>
+    <p>Password</p>
+    <input type="text" name="password" placeholder="Your password" required/><br/>
+    <input type="submit" value="Log In"/>
+</form>
+
+
+
+{% endblock %}
