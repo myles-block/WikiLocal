@@ -2,18 +2,40 @@
 <html>
 
 <head>
+{% block style %}
     <head>
         <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        <title>Barcelona Wiki</title>
+        <title>Welcome To The Team Gamma Projects</title>
+        <stlye>
+
+        </stlye>
     </head>
+
+    <style>
+        nav li {
+        display: inline-block;
+        margin: 12px;
+        list-style-type: None;
+
+        }
+    </style>
+{% endblock %}
 </head>
 
 <body>
     <!-- TODO(Project 1): Implement routes. -->
+    <nav>
+        <li><a href="/">Home</a></li>
+        <li><a href="/pages">Pages</a></li>
+        <li><a href="/about">About</a></li>
+    </nav>
     <div>       
         <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        This is Barcelona. Welcome to Barcelona
+        {% block content %}
+        {{ greetings }}
+        {% endblock %}
     </div>
+
 </body>
 
 </html>
