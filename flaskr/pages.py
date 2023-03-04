@@ -16,8 +16,8 @@ def make_endpoints(app):
     # TODO(Project 1): Implement additional routes according to the project requirements.
     @app.route('/pages')
     def pages():
-        places = ['georgetown','cathedral','new jersey','florida']
-        return render_template('pages.html',places=places)
+        backend= Backend('wiki_info')
+        return render_template('pages.html')
 
     @app.route('/about')
     def about():

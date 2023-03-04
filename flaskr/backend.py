@@ -14,8 +14,12 @@ class Backend:
         self.bucket = self.client.bucket(bucket_name)
         
     def get_wiki_page(self, name): # 1 
-
-        pass
+        ''' Gets an uploaded page from the content bucket '''
+        blob = self.bucket.blob(name)
+        name_data = blob.download_as_bytes()
+        if not name_data.strip():
+            return None 
+        return name_data.decode('utf-8')
 
     def get_all_page_names(self):
         pass
@@ -30,8 +34,11 @@ class Backend:
         pass
 
     def get_image(self,image_name): # 2
+
+        ''' Gets an image from the content bucket. '''
+
         blob = self.bucket.blob(image_name)
-        image_data=blob.download_as_string()
+        image_data=blob.download_as_bytes()
         if image_data:
             base64_image=base64.b64encode(image_data).decode('utf-8')
         return base64_image

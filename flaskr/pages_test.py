@@ -20,6 +20,18 @@ def client(app):
 def test_home_page(client):
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"Hello, World!\n" in resp.data
+    assert b"Welcome To Our Wiki-fun in your local\n" in resp.data
 
 # TODO(Project 1): Write tests for other routes.
+def test_about_page(client):
+    resp = client.get('/about')
+    assert resp.status_code == 200
+    assert b"Manish" in resp.data
+    assert b"Gabriel" in resp.data
+    assert b"Myles" in resp.data
+
+
+
+
+
+    
