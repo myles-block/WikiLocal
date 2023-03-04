@@ -17,8 +17,8 @@ def bucket(fake_blob):
 
 @pytest.fixture 
 def backend(bucket):
-    backend = Backend('test_bucket')
-    backend.bucket = bucket 
+    backend = Backend(info_bucket_name='test_bucket')
+    backend.info_bucket = bucket 
     return backend 
 
 def test_get_image(backend, fake_blob):
@@ -30,7 +30,7 @@ def test_get_image(backend, fake_blob):
     expected = base64.b64encode(b'Fake_Image_Data').decode('utf-8')
     assert result == expected 
     # checking the calls to the backend and blob 
-    backend.bucket.blob.assert_called_once_with('fake_image.jpeg')
+    backend.info_bucket.blob.assert_called_once_with('fake_image.jpeg')
     fake_blob.download_as_bytes.assert_called_once()
 
 

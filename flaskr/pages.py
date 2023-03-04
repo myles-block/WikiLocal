@@ -17,7 +17,9 @@ def make_endpoints(app):
     @app.route('/pages')
     def pages():
         backend= Backend(info_bucket_name='wiki_info')
-        return render_template('pages.html')
+
+        page_names = backend.get_all_page_names()
+        return render_template('pages.html', places = page_names)
 
     @app.route('/about')
     def about():

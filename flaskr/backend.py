@@ -1,6 +1,18 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 import base64
+
+class User:
+
+    def __init__(self, username, password, pages_created = []):
+        self.username = username
+        self.password = password
+        self.pages_created = pages_created
+        self.is_authenticated = False
+    
+    def get_id(self):
+        return self.username
+    
 class Backend:
 
     def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info'):
@@ -21,7 +33,9 @@ class Backend:
         pages = self.storage_client.list_blobs(self.info_bucket)
 
         for page in pages:
-            page_names.append(page.name)
+            extension = page.name.find('.')
+
+            page_names.append(page.name[:extension])
 
         return page_names
 
