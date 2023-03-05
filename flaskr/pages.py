@@ -12,8 +12,16 @@ def make_endpoints(app):
         # to render main.html on the home page.
         greetings='Welcome To Our Wiki-fun in your local'
         return render_template('main.html',greetings=greetings)
-
+    
     # TODO(Project 1): Implement additional routes according to the project requirements.
+
+    @app.route('/page/<page_name>')
+    def page(page_name):
+        backend = Backend()
+        file_name = page_name + '.txt'
+        page_content = backend.get_wiki_page(file_name)
+        return render_template('page.html', content = page_content, name = page_name)
+
     @app.route('/pages')
     def pages():
         backend= Backend(info_bucket_name='wiki_info')
@@ -33,9 +41,4 @@ def make_endpoints(app):
     def login():
         return render_template('login.html')
     
-    @app.route('/page/<page_name>')
-    def page(page_name):
-        backend = Backend()
-        file_name = page_name + '.txt'
-        page_content = backend.get_wiki_page(file_name)
-        return render_template('page.html', content = page_content, name = page_name)
+   

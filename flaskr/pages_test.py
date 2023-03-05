@@ -39,6 +39,14 @@ def test_pages_page(client):
     # Check we are only getting text files.
     assert b"gabrielPic" not in resp.data
 
+def test_wiki_page(client):
+    resp = client.get('/page/GeorgeTown%20Waterfront%20Park')
+    assert resp.status_code == 200
+    
+    # Check we are getting the information contained inside the text file.
+    assert b"GEORGETOWN WATERFRONT PARK" in resp.data
+    assert b"Located along the banks of the Potomac," in resp.data
+    
 
 
 
