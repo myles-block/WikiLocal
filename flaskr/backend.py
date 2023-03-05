@@ -35,7 +35,8 @@ class Backend:
         for page in pages:
             extension = page.name.find('.')
 
-            page_names.append(page.name[:extension])
+            if page.name[extension:] == '.txt':
+                page_names.append(page.name[:extension])
 
         return page_names
 
