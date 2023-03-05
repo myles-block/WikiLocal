@@ -28,6 +28,7 @@ class Backend:
         return name_data.decode('utf-8')
 
     def get_all_page_names(self):
+        ''' Gets all the names of the pages uploaded to the wiki'''
         page_names = []
 
         pages = self.storage_client.list_blobs(self.info_bucket)

@@ -15,11 +15,34 @@ def bucket(fake_blob):
     bucket.blob.return_value = fake_blob # returns the value of fake_blob
     return bucket 
 
+@pytest.fixture
+def fake_client():    
+    return MagicMock()
+
 @pytest.fixture 
-def backend(bucket):
-    backend = Backend(info_bucket_name='test_bucket')
+def backend(bucket, fake_client):
+    backend = Backend(storage_client = fake_client)
     backend.info_bucket = bucket 
     return backend 
+
+def test_get_all_pages(backend, fake_client, fake_blob):
+
+    # Setting blob's name property
+    fake_blob.name = 'Example Blob.txt'
+
+    # Mocking listing all the blobs of a bucket.
+    fake_client.list_blobs.return_value = [fake_blob]
+
+    # Calling the actual function with the mock data.
+    result = backend.get_all_page_names()
+    expected = ['Example Blob']
+
+    # Are we getting what we want?
+    assert result == expected
+    
+    # Check whether the backend and list_blobs were actually called.
+    backend.storage_client.list_blobs.assert_called_once()
+
 
 def test_get_image(backend, fake_blob):
 
