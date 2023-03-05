@@ -43,6 +43,37 @@ def test_get_all_pages(backend, fake_client, fake_blob):
     # Check whether the backend and list_blobs were actually called.
     backend.storage_client.list_blobs.assert_called_once()
 
+def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
+
+    # Setting blob's name property
+    fake_blob.name = 'Example Blob.jpeg'
+
+    # Mocking listing all the blobs of a bucket.
+    fake_client.list_blobs.return_value = [fake_blob]
+
+    # Calling the actual function with the mock data.
+    result = backend.get_all_page_names()
+    expected = []
+
+    # Are we getting what we want?
+    assert result == expected
+    
+    # Check whether the backend and list_blobs were actually called.
+    backend.storage_client.list_blobs.assert_called_once()
+
+def test_get_wiki_page(backend, fake_blob):
+
+    # Mocking the download_as_string
+    fake_blob.download_as_bytes.return_value = b'TEST PAGE This is just some testing'
+
+    # Getting the dummy data
+    result = backend.get_wiki_page('not_even_a_real_file.txt')
+    expected = (b'TEST PAGE This is just some testing').decode('utf-8')
+    assert result == expected
+
+    # Checking the calls to the backend and fake_blob
+    backend.info_bucket.blob.assert_called_once_with('not_even_a_real_file.txt')
+    fake_blob.download_as_bytes.assert_called_once()
 
 def test_get_image(backend, fake_blob):
 
@@ -55,6 +86,7 @@ def test_get_image(backend, fake_blob):
     # checking the calls to the backend and blob 
     backend.info_bucket.blob.assert_called_once_with('fake_image.jpeg')
     fake_blob.download_as_bytes.assert_called_once()
+
 
 
 
