@@ -32,3 +32,10 @@ def make_endpoints(app):
     @app.route('/login')
     def login():
         return render_template('login.html')
+    
+    @app.route('/page/<page_name>')
+    def page(page_name):
+        backend = Backend()
+        file_name = page_name + '.txt'
+        page_content = backend.get_wiki_page(file_name)
+        return render_template('page.html', content = page_content, name = page_name)
