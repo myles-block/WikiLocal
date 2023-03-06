@@ -4,7 +4,7 @@
     <h1> Places To Visit</h1>
     <ul>
         {% for place in places %}
-            <li><a href='#'>{{ place }}</a></li>
+            <li><a href={{ url_for('page', page_name = place)}}>{{ place }}</a></li>
         {% endfor %}
     </ul>
 

@@ -30,6 +30,23 @@ def test_about_page(client):
     assert b"Gabriel" in resp.data
     assert b"Myles" in resp.data
 
+def test_pages_page(client):
+    resp = client.get('/pages')
+    assert resp.status_code == 200
+    # Check we are getting only the name of the pages, and not their file extensions.
+    assert b"GeorgeTown Waterfront Park" in resp.data
+    assert b"GeorgeTown Waterfront Park.txt" not in resp.data
+    # Check we are only getting text files.
+    assert b"gabrielPic" not in resp.data
+
+def test_wiki_page(client):
+    resp = client.get('/page/GeorgeTown%20Waterfront%20Park')
+    assert resp.status_code == 200
+    
+    # Check we are getting the information contained inside the text file.
+    assert b"GEORGETOWN WATERFRONT PARK" in resp.data
+    assert b"Located along the banks of the Potomac," in resp.data
+    
 
 
 

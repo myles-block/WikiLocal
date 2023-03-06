@@ -1,28 +1,45 @@
 # TODO(Project 1): Implement Backend according to the requirements.
-
-# Imports the Google Cloud client library
 from google.cloud import storage
 import base64
 
+class User:
+
+    def __init__(self, username, password, pages_created = []):
+        self.username = username
+        self.password = password
+        self.pages_created = pages_created
+        self.is_authenticated = False
+    
+    def get_id(self):
+        return self.username
+    
 class Backend:
 
-    def __init__(self,bucket_name):
-        '''
-        client :  Instantiates a client
-        '''
-        self.client = storage.Client()
-        self.bucket = self.client.bucket(bucket_name)
+    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info'):
+        self.storage_client = storage_client
+        self.info_bucket = self.storage_client.bucket(info_bucket_name)
         
     def get_wiki_page(self, name): # 1 
         ''' Gets an uploaded page from the content bucket '''
-        blob = self.bucket.blob(name)
+        blob = self.info_bucket.blob(name)
         name_data = blob.download_as_bytes()
         if not name_data.strip():
             return None 
         return name_data.decode('utf-8')
 
     def get_all_page_names(self):
-        pass
+        ''' Gets all the names of the pages uploaded to the wiki'''
+        page_names = []
+
+        pages = self.storage_client.list_blobs(self.info_bucket)
+
+        for page in pages:
+            extension = page.name.find('.')
+
+            if page.name[extension:] == '.txt':
+                page_names.append(page.name[:extension])
+
+        return page_names
 
     def upload(self):
         pass
@@ -37,7 +54,7 @@ class Backend:
 
         ''' Gets an image from the content bucket. '''
 
-        blob = self.bucket.blob(image_name)
+        blob = self.info_bucket.blob(image_name)
         image_data=blob.download_as_bytes()
         if image_data:
             base64_image=base64.b64encode(image_data).decode('utf-8')
