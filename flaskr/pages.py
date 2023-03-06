@@ -34,7 +34,7 @@ def make_endpoints(app):
         backend = Backend(info_bucket_name='wiki_info')
         author_images = {'Manish':backend.get_image('manish.jpeg'),
                         'Gabriel': backend.get_image('gabrielPic.jpg'),
-                        'Myles': backend.get_image('manish.jpeg')}
+                        'Myles': backend.get_image('mylesPic.jpg')}
         return render_template('about.html',author_images = author_images)
     
     @app.route('/login')
