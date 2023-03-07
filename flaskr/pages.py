@@ -15,7 +15,7 @@ def make_endpoints(app):
     
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route('/page/<page_name>')
+    @app.route('/pages/<page_name>')
     def page(page_name):
         backend = Backend()
         file_name = page_name + '.txt'
@@ -39,6 +39,7 @@ def make_endpoints(app):
     
     @app.route('/login')
     def login():
+        # Start planning login
         return render_template('login.html')
     
    
