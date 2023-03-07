@@ -15,13 +15,13 @@ class User:
     
 class Backend:
 
-    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info'):
+    def __init__(self, storage_client = storage.Client(), bucket_name = 'wiki_info'):
         self.storage_client = storage_client
-        self.info_bucket = self.storage_client.bucket(info_bucket_name)
+        self.bucket = self.storage_client.bucket(bucket_name)
         
     def get_wiki_page(self, name): # 1 
         ''' Gets an uploaded page from the content bucket '''
-        blob = self.info_bucket.blob(name)
+        blob = self.bucket.blob(name)
         name_data = blob.download_as_bytes()
         if not name_data.strip():
             return None 
@@ -31,7 +31,7 @@ class Backend:
         ''' Gets all the names of the pages uploaded to the wiki'''
         page_names = []
 
-        pages = self.storage_client.list_blobs(self.info_bucket)
+        pages = self.storage_client.list_blobs(self.bucket)
 
         for page in pages:
             extension = page.name.find('.')
@@ -44,11 +44,11 @@ class Backend:
     def upload(self):
         pass
 
-    def sign_up(self):
+    def sign_up(self, username, password):
         # first create new sign_up html template (DONE)
         # have it follow the correct template (DONE)
         # currently the signup.html form sends action to /signup
-        # store username & password variable, after submit button is pressed
+        # store username & password variable, after submit button is pressed (DONE)
         # - handle empty suites
         # - handle full suites
         # - handle already signed up users
@@ -56,6 +56,12 @@ class Backend:
         # hash password using some sort of cryptography key
         # use login manager to pull
         # if user exist, render a new template
+        ''' Adds data to the content bucket 
+         username : username 
+         password : name of the file user selected
+         '''
+        user = User(username, password)
+        blob = self.bucket.blob(user)
         pass
 
     def sign_in(self):
@@ -65,7 +71,7 @@ class Backend:
 
         ''' Gets an image from the content bucket. '''
 
-        blob = self.info_bucket.blob(image_name)
+        blob = self.bucket.blob(image_name)
         image_data=blob.download_as_bytes()
         if image_data:
             base64_image=base64.b64encode(image_data).decode('utf-8')
