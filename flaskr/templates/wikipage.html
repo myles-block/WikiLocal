@@ -1,0 +1,16 @@
+{% extends "main.html" %}
+{% block title %} Hello {% endblock %}
+{% block content %}
+
+<h1> Just Checking </h1>
+<h3> {{ page_name }} </h3>
+<br>
+<p>{{ content_page_name }}</p>
+
+{% endblock %}
+{% extends "main.html" %}
+
+{% block title %} {{ name }} {% endblock %}
+{% block content %}
+    {{ content  }}
+{% endblock %}
