@@ -46,9 +46,15 @@ class Backend:
 
     def sign_up(self):
         # first create new sign_up html template (DONE)
-        # have it follow the correct template
+        # have it follow the correct template (DONE)
+        # currently the signup.html form sends action to /signup
         # store username & password variable, after submit button is pressed
+        # - handle empty suites
+        # - handle full suites
+        # - handle already signed up users
+        # - handle incorrect password
         # hash password using some sort of cryptography key
+        # use login manager to pull
         # if user exist, render a new template
         pass
 

@@ -13,6 +13,9 @@ Sign Up
     <!-- <p>Password</p> -->
     <input type="text" name="password" placeholder="Password" required/>
     <input type="submit" value="Sign Up"/>
+    {% if message %}
+        <div>{{ message }}</div>
+       {% endif %}
 </form>
 
 

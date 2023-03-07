@@ -1,4 +1,4 @@
-from flask import render_template 
+from flask import render_template ,url_for ,flash , request , redirect 
 from flaskr.backend import Backend 
 
 
@@ -41,8 +41,16 @@ def make_endpoints(app):
     def login():
         return render_template('login.html')
 
-    @app.route('/signup')
+    @app.route('/signup', methods =['GET','POST'])
     def signup():
+        msg = '' # return message
+        # backend = Backend('wiki_login') # gets bucket
+        if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+            msg = "Successfully Completed!!!"
+            return render_template('signup.html', message = msg)
+        elif request.method == "POST":
+            msg = "Please fill out the form!"
+            return render_template('signup.html', message = msg)
         return render_template('signup.html')
     
    
