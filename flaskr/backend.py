@@ -45,6 +45,10 @@ class Backend:
         pass
 
     def sign_up(self):
+        # first create new sign_up html template
+        # store username & password variable, after submit button is pressed
+        # hash password using some sort of cryptography key
+        # if user exist, render a new template
         pass
 
     def sign_in(self):
