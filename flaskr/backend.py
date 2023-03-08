@@ -72,10 +72,14 @@ class Backend:
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
         blob = self.bucket.blob(username)
-
-        with blob.open("w") as f:
-            f.write(hashed.hexdigest())
-        return None
+        isExist = storage.Blob(bucket= self.bucket, name=username).exists(self.storage_client)
+        if isExist: # if exist
+            return False # unsuccessful
+        else:
+            with blob.open("w") as f:
+                f.write(hashed.hexdigest())
+            return True # successful
+        #return postive sign up, or negative sign up
 
     def sign_in(self):
         pass
