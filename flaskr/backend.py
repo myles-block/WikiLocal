@@ -1,24 +1,27 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
+from flask_login import login_manager
 import base64
+
 
 class User:
 
-    def __init__(self, username, password, pages_created = []):
+    def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.pages_created = pages_created
         self.is_authenticated = False
     
     def get_id(self):
         return self.username
-    
+
+
 class Backend:
 
-    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info'):
+    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info', user_bucket_name = 'wiki_login'):
         self.storage_client = storage_client
         self.info_bucket = self.storage_client.bucket(info_bucket_name)
-        
+        self.user_bucket = self.storage_client.bucket(user_bucket_name)
+    
     def get_wiki_page(self, name): # 1 
         ''' Gets an uploaded page from the content bucket '''
         blob = self.info_bucket.blob(name)
@@ -47,8 +50,13 @@ class Backend:
     def sign_up(self):
         pass
 
-    def sign_in(self):
-        pass
+    def sign_in(self, username, password):
+        if storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client):
+            user = self.user_bucket.blob(username)
+            pw = user.download_as_bytes()
+            if password == pw.decode('utf-8'):
+                return User(username, pw)
+        return None
 
     def get_image(self,image_name): # 2
 

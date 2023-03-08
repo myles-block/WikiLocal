@@ -1,5 +1,8 @@
-from flask import render_template 
-from flaskr.backend import Backend 
+from flask import render_template, Flask, url_for, flash, request, redirect
+
+from flask_login import login_user, login_required, logout_user
+
+from flaskr.backend import User, Backend
 
 
 def make_endpoints(app):
@@ -37,9 +40,27 @@ def make_endpoints(app):
                         'Myles': backend.get_image('manish.jpeg')}
         return render_template('about.html',author_images = author_images)
     
-    @app.route('/login')
+    @app.login_manager.user_loader
+    def load_user(user_id):
+        return User.get_id(user_id)
+
+    @app.route('/login', methods=['GET','POST'])
     def login():
-        # Start planning login
+        backend = Backend()
+
+        if request.method == 'POST':
+            user = backend.sign_in(request.form['username'], request.form['password'])
+
+            if user:
+                login_user(user)
+                redirect('home')        
+        
         return render_template('login.html')
     
+    @app.route("/logout")
+    @login_required
+    def logout():
+        logout_user()
+        return redirect('home')
+   
    
