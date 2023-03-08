@@ -28,8 +28,7 @@ def test_about_page(client):
     assert resp.status_code == 200
     assert b"Manish" in resp.data
     assert b"Gabriel" in resp.data
-    assert b"Myles" in resp.data
-
+    assert b"Myles" in resp.data 
 
 
 

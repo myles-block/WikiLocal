@@ -9,28 +9,38 @@ About This Wiki
 
 <!-- TODO(Project 1): Add info about the wiki. -->
 <style>
-    img {
+    .column {
+        float: left;
+        height: 500px;
+        width: 300px;;
+        padding: 20px;
+    }
+    .column img {
         height: 500px;
         width: 300px;
-        margin: 30px;
+    }
+    .row::after {
+        content: "";
+        clear: both;
+        display: table;
     }
 </style>
 
 <h3>Team Gama-Members</h3>
 <!-- TODO(Project 1): Add team members and pictures to about page. -->
  <!-- looping through the dictionaries  -->
-{% for name,images in author_images.items() %} 
-        <img src='data:image/jpeg;base64,{{ images }}' alt='Author Image'>
-        {% if name=='Manish' %}
-            <p>{{ name }} , Howard University</p>
-        {% elif name=='Gabriel' %}
-            <p>{{ name }}, Florida University</p>
-        {% else %}
-            <p>{{ name }}, Howard University</p>
-        {% endif %}
-{% endfor %}
-
-
-
+ <div class="row">
+    {% for name,images in author_images.items() %}
+        <div class="column">
+            <img src='data:image/jpeg;base64,{{ images }}' alt='Author Image'>
+            {% if name=='Manish' %}
+                <p>{{ name }} , Howard University</p>
+            {% elif name=='Gabriel' %}
+                <p>{{ name }}, Florida InternationalUniversity</p>
+            {% else %}
+                <p>{{ name }}, Howard University</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
-
