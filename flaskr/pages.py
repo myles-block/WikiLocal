@@ -24,14 +24,14 @@ def make_endpoints(app):
 
     @app.route('/pages')
     def pages():
-        backend= Backend(info_bucket_name='wiki_info')
+        backend= Backend(bucket_name='wiki_info')
 
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places = page_names)
 
     @app.route('/about')
     def about():
-        backend = Backend(info_bucket_name='wiki_info')
+        backend = Backend(bucket_name='wiki_info')
         author_images = {'Manish':backend.get_image('manish.jpeg'),
                         'Gabriel': backend.get_image('gabrielPic.jpg'),
                         'Myles': backend.get_image('mylesPic.jpg')}
@@ -44,11 +44,11 @@ def make_endpoints(app):
     @app.route('/signup', methods =['GET','POST'])
     def signup():
         msg = ''
-        backend = Backend(info_bucket_name= 'wiki_login') # gets bucket
+        backend = Backend(bucket_name= 'wiki_login') # gets bucket
         if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
             username = request.form['username']
             password = request.form['password']
-            # backend.sign_up(file,filename)
+            backend.sign_up(username, password)
             msg = "Successfully Completed!!!"
             return render_template('signup.html', message = msg)
         elif request.method == "POST":

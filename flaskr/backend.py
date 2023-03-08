@@ -49,6 +49,12 @@ class Backend:
         # have it follow the correct template (DONE)
         # currently the signup.html form sends action to /signup
         # store username & password variable, after submit button is pressed (DONE)
+        # figure out how to save user object to GCS (DONE)
+            # - save username as blob name and then write to blob (with hashpassword) (WORKING)
+            # - issue with pulling username from the form (need to typecheck and print)
+            # can't user user object
+        # can use JSON as a further implement
+        # sub problem: figure out how to save object names
         # - handle empty suites
         # - handle full suites
         # - handle already signed up users
@@ -57,11 +63,17 @@ class Backend:
         # use login manager to pull
         # if user exist, render a new template
         ''' Adds data to the content bucket 
-         username : username 
-         password : name of the file user selected
+         user.get_id : username 
+         user : user object
          '''
-        user = User(username, password)
-        blob = self.bucket.blob(user)
+        print(username)
+        print(type(username)) #it is type string
+        # print("User: " + str(user.get_id))
+        # print(type(user.get_id))
+        blob = self.bucket.blob(username) # sets blob name to userID 
+        with blob.open("w") as f:
+            f.write("Hello world")
+        # blob.upload_from_file(user) # uploads user to GCS
         pass
 
     def sign_in(self):
