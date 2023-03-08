@@ -44,7 +44,7 @@ def make_endpoints(app):
     @app.route('/signup', methods =['GET','POST'])
     def signup():
         msg = ''
-        backend = Backend(bucket_name= 'wiki_login') # gets bucket
+        backend = Backend(bucket_name= 'wiki_login')
         if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
             username = request.form['username']
             password = request.form['password']
