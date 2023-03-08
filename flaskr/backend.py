@@ -1,6 +1,7 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 import base64
+import hashlib
 
 class User:
 
@@ -66,15 +67,10 @@ class Backend:
          user.get_id : username 
          user : user object
          '''
-        print(username)
-        print(type(username)) #it is type string
-        # print("User: " + str(user.get_id))
-        # print(type(user.get_id))
-        blob = self.bucket.blob(username) # sets blob name to userID 
+        hashed = hashlib.md5(password.encode())
+        blob = self.bucket.blob(username)
         with blob.open("w") as f:
-            f.write("Hello world")
-        # blob.upload_from_file(user) # uploads user to GCS
-        pass
+            f.write(hashed.hexdigest())
 
     def sign_in(self):
         pass
