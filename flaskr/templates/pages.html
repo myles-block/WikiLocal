@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+{% block title %} My Pages {% endblock %}
+{% block content %}
+    <h1> Places To Visit</h1>
+    <ul>
+        {% for place in places %}
+            <li><a href={{ url_for('page', page_name = place)}}>{{ place }}</a></li>
+        {% endfor %}
+    </ul>
+
+
+{% endblock %}
