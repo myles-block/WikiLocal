@@ -1,4 +1,7 @@
 from flaskr import create_app
+from flask_login import FlaskLoginClient
+from flaskr.backend import User
+
 
 import pytest
 
@@ -46,7 +49,6 @@ def test_wiki_page(client):
     # Check we are getting the information contained inside the text file.
     assert b"GEORGETOWN WATERFRONT PARK" in resp.data
     assert b"Located along the banks of the Potomac," in resp.data
-    
 
 
 

@@ -1,6 +1,7 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 from flask_login import login_manager
+import hashlib
 import base64
 
 
@@ -53,8 +54,13 @@ class Backend:
     def sign_in(self, username, password):
         if storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client):
             user = self.user_bucket.blob(username)
+            
+            salted = f"{username}{'gamma'}{password}"
+            hashed_password = hashlib.blake2b(salted.encode()).hexdigest()
+
             pw = user.download_as_bytes()
-            if password == pw.decode('utf-8'):
+
+            if hashed_password == pw.decode('utf-8'):
                 return User(username, pw)
         return None
 
