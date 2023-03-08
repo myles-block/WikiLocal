@@ -1,9 +1,7 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-
 from flask_login import login_user, login_required, logout_user
-
-from flaskr.backend import User, Backend
 from werkzeug.utils import secure_filename
+from flaskr.backend import Backend, User
 
 def make_endpoints(app):
 
