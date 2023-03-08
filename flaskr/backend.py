@@ -46,28 +46,10 @@ class Backend:
         pass
 
     def sign_up(self, username, password):
-        # first create new sign_up html template (DONE)
-        # have it follow the correct template (DONE)
-        # currently the signup.html form sends action to /signup
-        # store username & password variable, after submit button is pressed (DONE)
-        # figure out how to save user object to GCS (DONE)
-            # - save username as blob name and then write to blob (with hashpassword) (DONE)
-            # - issue with pulling username from the form (need to typecheck and print) (FIXED)
-            # can't user user object
-        # can use JSON as a further implement
-        # sub problem: figure out how to save object names
-        # - handle empty suites (DONE)
-        # - handle full suites (DONE)
-        # - handle already signed up users 
-        # - handle incorrect password
-        # use login manager to pull
-        # if user exist, render a new template
         ''' Adds data to the content bucket 
          user.get_id : username 
          user : user object
          '''
-        # makes sure sign up handles duplicates
-        # fix and add salt (DONE)
         # return user object & redirect home 
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())

@@ -45,7 +45,7 @@ def make_endpoints(app):
     def signup():
         msg = ''
         backend = Backend(bucket_name= 'wiki_login')
-        if request.method == 'POST': #required already makes sure form gets filled
+        if request.method == 'POST': 
             completed = backend.sign_up(request.form['username'], request.form['password'])
             if completed:
                 msg = "Successfully Completed!!!"
@@ -54,9 +54,6 @@ def make_endpoints(app):
             else:
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message = msg)
-        elif request.method == "POST":
-            msg = "Please fill out the form!"
-            return render_template('signup.html', message = msg)
         return render_template('signup.html')
     
    
