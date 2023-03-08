@@ -61,16 +61,18 @@ class Backend:
         pass
 
     def sign_in(self, username, password):
+        '''Checks if the given username and password matches a user in our GCS bucket'''
         if storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client):
             user = self.user_bucket.blob(username)
             
             salted = f"{username}{'gamma'}{password}"
-            hashed_password = hashlib.blake2b(salted.encode()).hexdigest()
+            hashed_password = hashlib.md5(salted.encode()).hexdigest()
 
             pw = user.download_as_bytes()
 
             if hashed_password == pw.decode('utf-8'):
                 return User(username, pw)
+        
         return None
 
     def get_image(self,image_name): # 2
