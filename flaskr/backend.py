@@ -68,15 +68,14 @@ class Backend:
          '''
         # makes sure sign up handles duplicates
         # fix and add salt (DONE)
-        # return user object & redirect home
+        # return user object & redirect home 
         salted = f"{username}{'gamma'}{password}"
-        print(salted)
-        print(type(salted))
         hashed = hashlib.md5(salted.encode())
-        print(hashed.hexdigest())
         blob = self.bucket.blob(username)
+
         with blob.open("w") as f:
             f.write(hashed.hexdigest())
+        return None
 
     def sign_in(self):
         pass
