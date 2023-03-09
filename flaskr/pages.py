@@ -83,5 +83,9 @@ def make_endpoints(app):
     def logout():
         logout_user()
         return redirect('/')
+
+    @app.route('/upload')
+    def upload():
+        return render_template('upload.html')
    
    

@@ -28,7 +28,10 @@
         <li><a href="/">Home</a></li>
         <li><a href="/pages">Pages</a></li>
         <li><a href="/about">About</a></li>
+        <li>|</li>
         {% if current_user.is_authenticated %}
+        <li><p>{{current_user.username}}</p></li>
+        <li>|</li>
         <li><a href="/upload">Upload</a></li>        
         <li><a href="/logout">Logout</a></li>
         {% else %}
