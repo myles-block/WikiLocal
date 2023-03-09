@@ -94,8 +94,6 @@ class Backend:
                         
             if hashed_password == pw.decode('utf-8'):
                 return User(username)
-
-        
         return None
 
     def get_image(self,image_name): # 2

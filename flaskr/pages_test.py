@@ -107,6 +107,3 @@ def test_logout(authenticated_client):
     # Check that the logout was successful
     assert response.status_code == 200
     assert not current_user.is_authenticated
-
-
-    
