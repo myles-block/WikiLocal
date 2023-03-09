@@ -14,6 +14,7 @@ import hashlib
 class User:
 
     def __init__(self, username):
+        '''Initializes a User object'''
         self.username = username
         self.client = storage.Client()
         self.bucket =  self.client.bucket('wiki_login')

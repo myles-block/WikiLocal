@@ -19,6 +19,7 @@ def make_endpoints(app):
 
     @app.route('/pages/<page_name>')
     def page(page_name):
+        '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
         backend = Backend()
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
@@ -45,6 +46,10 @@ def make_endpoints(app):
 
     @app.route('/login', methods=['GET','POST'])
     def login():
+        '''
+        This route attempts to log a user with a POST request. 
+        Otherwise, it just renders a login form where users can try to log in with their credentials
+        '''
         backend = Backend()
 
         if request.method == 'POST':
@@ -76,6 +81,8 @@ def make_endpoints(app):
     @app.route("/logout")
     @login_required
     def logout():
+        '''This route logs out the current user'''
+
         logout_user()
         return redirect('/')
     
