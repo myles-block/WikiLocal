@@ -87,25 +87,28 @@ class Backend:
         return page_names
 
     def upload(self,file,filename):
-        pass
+        ''' Adds data to the content bucket 
+         file : path of the file 
+         filename : name of the file user selected
+         '''
+        blob = self.info_bucket.blob(filename)
+        blob.upload_from_file(file)  
 
     def sign_up(self, username, password):
         ''' Adds data to the content bucket 
          user.get_id : username 
          user : user object
-         '''
-        # return user object & redirect home 
+         ''' 
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
         blob = self.user_bucket.blob(username)
         isExist = storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client)
-        if isExist: # if exist
-            return False # unsuccessful
+        if isExist:
+            return False
         else:
             with blob.open("w") as f:
                 f.write(hashed.hexdigest())
-            return True # successful
-        #return postive sign up, or negative sign up
+            return True 
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''

@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+
+{% block title %}
+Upload
+{% endblock %}
+{% block content %}
+<h3>Upload a doc to the wiki</h3>
+
+
+<form method="post" action="/upload" enctype="multipart/form-data">
+    <input type="text" name="wikiname" placeholder="Wikiname" required/>
+    <input type="file" id="myFile" name="file">
+    <input type="submit">
+    {% if message %}
+        <div>{{ message }}</div>
+       {% endif %}
+</form>
+
+
+
+{% endblock %}
+
