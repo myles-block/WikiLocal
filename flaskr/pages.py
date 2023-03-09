@@ -61,8 +61,10 @@ def make_endpoints(app):
                 print('We are getting a user')
                 login_user(user)
                 return redirect('/')
+            else:
+                return render_template('login.html', message = 'Invalid username or password')
         
-        return render_template('login.html')
+        return render_template('login.html', msg = '')
     
     @app.route("/logout")
     @login_required

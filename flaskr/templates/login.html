@@ -13,6 +13,9 @@ Sign in
     <p>Password</p>
     <input type="text" name="password" placeholder="Your password" maxlength="16" required/><br/>
     <input type="submit" value="Log In"/>
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
 </form>
 
 
