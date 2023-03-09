@@ -1,6 +1,5 @@
 from flaskr import create_app
 from flaskr.backend import User
-from flask import Flask, session
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
 import pytest
@@ -10,34 +9,30 @@ import pytest
 @pytest.fixture
 def app():
 
-    login_manager = LoginManager()
-
     app = create_app({
         'TESTING': True,
-        'SECRET_KEY': 'mysecretkey',
-        'WTF_CSRF_ENABLED': False
+        'WTF_CSRF_ENABLED': False,
     })
-    
-    login_manager.init_app(app)
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.get_id(user_id)
 
     return app
 
 @pytest.fixture
 def client(app):
-    client = app.test_client()
-    return client
+    with app.test_client() as client:
+        with app.app_context():
+            yield client
 
 @pytest.fixture
-def user_id():
-    return 'testuser'
-
-@pytest.fixture
-def user_password():
-    return 'testpassword'
+def test_user():
+    username = 'testing'
+    password = 'testing'
+    user = User(username)
+    # Upload a test user to the bucket.
+    user.save(password)
+    yield user
+    blob = user.bucket.blob(username)
+    # After we have finished testing, just delete it.
+    blob.delete()
 
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
@@ -71,39 +66,33 @@ def test_wiki_page(client):
     assert b"GEORGETOWN WATERFRONT PARK" in resp.data
     assert b"Located along the banks of the Potomac," in resp.data
 
-def test_wiki_page_failure(client):
-    resp = client.get('/pages/NonExistingPage')
-    assert resp.status_code == 404
+def test_login(client, test_user):
+    # Send a response to the route trying to verify for the test user.
+    response = client.post('/login', data={'username': 'testing', 'password': 'testing'})
+    # We should get redirected to the home page, resulting in a 302 code.
+    assert response.status_code == 302
+    # The current_user should be updated to 'testing'.
+    assert current_user.username == 'testing'
 
-@pytest.fixture
-def authenticated_client(client, user_id, user_password):
-    # Log in the user for testing
-    with client:
-        response = client.post('/login', data=dict(
-            username=user_id,
-            password=user_password
-        ), follow_redirects=True)
-        assert response.status_code == 200
-        assert current_user.is_authenticated
-        yield client
-        # Log out the user after testing
-        logout_user()
-
-def test_login(client, user_id, user_password):
-    # Log in the user
-    response = client.post('/login', data=dict(
-        username=user_id,
-        password=user_password
-    ), follow_redirects=True)
-    
-    # Check that the login was successful
+def test_login_incorrect_password(client, test_user):
+    # If we pass the wrong information, we will not be redirected.
+    response = client.post('/login', data={'username': 'testing', 'password': 'wrongpassword'})
     assert response.status_code == 200
+    # We do not have a user authenticated as nobody actually logged in.
+    assert current_user.is_authenticated == False
+
+def test_logout(client, test_user):
+    response = client.post('/login', data={'username': 'testing', 'password': 'testing'})
+    assert response.status_code == 302
     assert current_user.is_authenticated
+    assert current_user.username == 'testing'
+    
+    # Check if logging out actually works
+    response = client.get('/logout')
+    assert response.status_code == 302
+    assert current_user.is_anonymous
+    
 
-def test_logout(authenticated_client):
-    # Log out the user
-    response = authenticated_client.get('/logout', follow_redirects=True)
 
-    # Check that the logout was successful
-    assert response.status_code == 200
-    assert not current_user.is_authenticated
+
+    

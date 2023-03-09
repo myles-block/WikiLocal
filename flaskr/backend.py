@@ -1,4 +1,9 @@
-# TODO(Project 1): Implement Backend according to the requirements.
+'''
+This module works as the backend for a Wiki Page.
+
+Contains two classes: The User and the Backend class
+which define how the application interacts with the storage system.
+'''
 from google.cloud import storage
 from flask_login import login_manager
 import hashlib
@@ -10,12 +15,44 @@ class User:
 
     def __init__(self, username):
         self.username = username
+        self.client = storage.Client()
+        self.bucket =  self.client.bucket('wiki_login')
         self.is_authenticated = True
         self.is_active = True
         self.is_anonymous = False
     
     def get_id(self):
         return self.username
+    
+    def save(self, password):
+        '''
+        This method uploads a user information into the wiki_login bucket.
+        '''
+        blob = self.bucket.blob(self.username)
+        salted = f"{self.username}{'gamma'}{password}"
+        hashed = hashlib.md5(salted.encode())
+        with blob.open("w") as f:
+                f.write(hashed.hexdigest())
+        return True
+
+    def load(self):
+        '''This method returns the password of the current user from the users bucket.'''
+        blob = self.bucket.blob(self.username)
+        data = blob.download_as_bytes()
+        return data.decode('utf-8')
+
+    @staticmethod
+    def get(username):
+        '''
+        This method tries to find a user with the associated username in our users bucket,
+        and returns a Username object with its information
+        '''
+        user = User(username)
+        try:
+            user.load()
+            return User(username)
+        except:
+            return None
 
 class Backend:
 
@@ -62,25 +99,23 @@ class Backend:
          filename : name of the file user selected
          '''
         blob = self.info_bucket.blob(filename)
-        blob.upload_from_file(file)
+        blob.upload_from_file(file)  
 
     def sign_up(self, username, password):
         ''' Adds data to the content bucket 
          user.get_id : username 
          user : user object
-         '''
-        # return user object & redirect home 
+         ''' 
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
         blob = self.user_bucket.blob(username)
         isExist = storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client)
-        if isExist: # if exist
-            return False # unsuccessful
+        if isExist:
+            return False
         else:
             with blob.open("w") as f:
                 f.write(hashed.hexdigest())
-            return True # successful
-        #return postive sign up, or negative sign up
+            return True 
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''

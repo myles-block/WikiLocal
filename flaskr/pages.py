@@ -41,11 +41,7 @@ def make_endpoints(app):
     
     @app.login_manager.user_loader
     def load_user(user_id):
-        client = storage.Client()
-        bucket = client.bucket('wiki_login')
-        blob = bucket.blob(user_id)
-        user = User(blob.name)
-        return user
+        return User.get(user_id)
 
     @app.route('/login', methods=['GET','POST'])
     def login():
@@ -55,7 +51,6 @@ def make_endpoints(app):
             user = backend.sign_in(request.form['username'], request.form['password'])
 
             if user:
-                print('We are getting a user')
                 login_user(user)
                 return redirect('/')
             else:
@@ -83,5 +78,35 @@ def make_endpoints(app):
     def logout():
         logout_user()
         return redirect('/')
+    
+    @app.route('/upload',methods=['GET','POST'])
+    def upload():
+        backend = Backend(info_bucket_name='wiki_info')
+        if request.method == 'POST':
+            print(request.files)
+            if 'file' not in request.files:
+                message = 'No file part'
+                return render_template('upload.html',message=message)
+            file = request.files['file']
+            if file.filename == ' ':
+                message = 'Please Select Files'
+                return render_template('upload.html',message = message)
+            if file.filename and allowed_file(file.filename):
+                # filename = secure_filename(file.filename)
+                backend.upload(file, request.form['wikiname'] + ".txt") #workaround
+                message = 'Uploaded Successfully'
+                return render_template('upload.html',message = message)  
+        return render_template('upload.html')
+
+    def allowed_file(filename):
+        ''' 
+        filename : first name of the file -<abc.txt-> abc
+        '''
+        allowed_extensions = {'txt','jpeg','jpg','png'}
+        extensions = filename.split('.')[1].lower()
+        if extensions in allowed_extensions:
+            return True 
+        else:
+            return False
    
    
