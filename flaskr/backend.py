@@ -4,6 +4,7 @@ This module works as the backend for a Wiki Page.
 Contains two classes: The User and the Backend class
 which define how the application interacts with the storage system.
 '''
+
 from google.cloud import storage
 from flask_login import login_manager
 import hashlib
