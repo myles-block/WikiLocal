@@ -55,5 +55,9 @@ def make_endpoints(app):
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message = msg)
         return render_template('signup.html')
+
+    @app.route('/upload')
+    def upload():
+        return render_template('upload.html')
     
    
