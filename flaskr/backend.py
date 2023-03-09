@@ -67,7 +67,9 @@ class Backend:
         
     def get_wiki_page(self, name): # 1 
 
-        ''' Gets an uploaded page from the content bucket '''
+        ''' Gets an uploaded page from the content bucket
+            name : name of the page files 
+           '''
         
         blob = self.info_bucket.blob(name)
         name_data = blob.download_as_bytes()
@@ -127,13 +129,12 @@ class Backend:
                         
             if hashed_password == pw.decode('utf-8'):
                 return User(username)
-
-        
         return None
 
     def get_image(self,image_name): # 2
 
-        ''' Gets an image from the content bucket. '''
+        ''' Gets an image from the content bucket.
+            image_name : name of the image to be get from bucket  '''
 
         try: 
             blob = self.info_bucket.blob(image_name)
@@ -145,10 +146,6 @@ class Backend:
             raise ValueError('Image Name does not exist in the bucket')
         
 
-        
-    
-
-        
 
 
 
