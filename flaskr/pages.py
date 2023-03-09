@@ -41,11 +41,7 @@ def make_endpoints(app):
     
     @app.login_manager.user_loader
     def load_user(user_id):
-        client = storage.Client()
-        bucket = client.bucket('wiki_login')
-        blob = bucket.blob(user_id)
-        user = User(blob.name)
-        return user
+        return User.get(user_id)
 
     @app.route('/login', methods=['GET','POST'])
     def login():
@@ -55,7 +51,6 @@ def make_endpoints(app):
             user = backend.sign_in(request.form['username'], request.form['password'])
 
             if user:
-                print('We are getting a user')
                 login_user(user)
                 return redirect('/')
             else:
