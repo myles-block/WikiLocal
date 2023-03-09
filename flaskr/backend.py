@@ -1,26 +1,29 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
+from flask_login import login_manager
+import hashlib
 import base64
 import hashlib
 
+
 class User:
 
-    def __init__(self, username, password, pages_created = []):
+    def __init__(self, username):
         self.username = username
-        self.password = password
-        self.pages_created = pages_created
-        self.is_authenticated = False
+        self.is_authenticated = True
+        self.is_active = True
+        self.is_anonymous = False
     
     def get_id(self):
         return self.username
-    
+
 class Backend:
 
     def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info', user_bucket_name = 'wiki_login'):
         '''
         storage: Instantiates a client
-        info_bucket_name : bucket nanme to store the data related to pages and about '''
-
+        info_bucket_name : bucket name to store the data related to pages and about 
+        '''
         self.storage_client = storage_client
         self.info_bucket = self.storage_client.bucket(info_bucket_name)
         self.user_bucket = self.storage_client.bucket(user_bucket_name)
@@ -72,8 +75,21 @@ class Backend:
             return True # successful
         #return postive sign up, or negative sign up
 
-    def sign_in(self):
-        pass
+    def sign_in(self, username, password):
+        '''Checks if the given username and password matches a user in our GCS bucket'''
+        if storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client):
+            user = self.user_bucket.blob(username)
+            
+            salted = f"{username}{'gamma'}{password}"
+            hashed_password = hashlib.md5(salted.encode()).hexdigest()
+
+            pw = user.download_as_bytes()
+                        
+            if hashed_password == pw.decode('utf-8'):
+                return User(username)
+
+        
+        return None
 
     def get_image(self,image_name): # 2
 
@@ -86,7 +102,7 @@ class Backend:
                 base64_image=base64.b64encode(image_data).decode('utf-8')
                 return base64_image
         except FileNotFoundError : #handling the not existing file
-            raise ValueError('Image Name doesnot exist in the bucket')
+            raise ValueError('Image Name does not exist in the bucket')
         
 
         

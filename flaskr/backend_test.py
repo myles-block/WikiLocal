@@ -102,7 +102,7 @@ def test_get_image_failure(backend,fake_blob):
     #checking if value error raises or not in the backend
     with pytest.raises(ValueError) as v:
         backend.get_image('fake_not_existing_image.jpeg')
-    assert str(v.value) == 'Image Name doesnot exist in the bucket'
+    assert str(v.value) == 'Image Name does not exist in the bucket'
    
     #checking the calls to the backend and blob
     backend.info_bucket.blob.assert_called_once_with('fake_not_existing_image.jpeg')
