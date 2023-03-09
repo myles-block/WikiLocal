@@ -28,7 +28,13 @@
         <li><a href="/">Home</a></li>
         <li><a href="/pages">Pages</a></li>
         <li><a href="/about">About</a></li>
+        {% if current_user.is_authenticated %}        
+        <li><a href="/logout">Logout</a></li>
+        {% else %}
         <li><a href="/login">Sign in</a></li>
+        {% endif %}
+        
+        
     </nav>
     <div>       
         <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->

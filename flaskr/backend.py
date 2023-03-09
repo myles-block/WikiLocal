@@ -7,14 +7,14 @@ import base64
 
 class User:
 
-    def __init__(self, username, password):
+    def __init__(self, username):
         self.username = username
-        self.password = password
-        self.is_authenticated = False
+        self.is_authenticated = True
+        self.is_active = True
+        self.is_anonymous = False
     
     def get_id(self):
         return self.username
-
 
 class Backend:
 
@@ -69,9 +69,10 @@ class Backend:
             hashed_password = hashlib.md5(salted.encode()).hexdigest()
 
             pw = user.download_as_bytes()
-
+                        
             if hashed_password == pw.decode('utf-8'):
-                return User(username, pw)
+                return User(username)
+
         
         return None
 
@@ -86,7 +87,7 @@ class Backend:
                 base64_image=base64.b64encode(image_data).decode('utf-8')
                 return base64_image
         except FileNotFoundError : #handling the not existing file
-            raise ValueError('Image Name doesnot exist in the bucket')
+            raise ValueError('Image Name does not exist in the bucket')
         
 
         

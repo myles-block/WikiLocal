@@ -2,6 +2,7 @@ from flask import render_template, Flask, url_for, flash, request, redirect
 from flask_login import login_user, login_required, logout_user
 from werkzeug.utils import secure_filename
 from flaskr.backend import Backend, User
+from google.cloud import storage
 
 def make_endpoints(app):
 
@@ -40,7 +41,14 @@ def make_endpoints(app):
     
     @app.login_manager.user_loader
     def load_user(user_id):
-        return User.get_id(user_id)
+        client = storage.Client()
+        # Construct the Cloud Storage bucket name
+
+        # Retrieve the user object from the Cloud Storage bucket
+        bucket = client.bucket('wiki_login')
+        blob = bucket.blob(user_id)
+        user = User(blob.name)
+        return user
 
     @app.route('/login', methods=['GET','POST'])
     def login():
@@ -50,8 +58,9 @@ def make_endpoints(app):
             user = backend.sign_in(request.form['username'], request.form['password'])
 
             if user:
+                print('We are getting a user')
                 login_user(user)
-                redirect('home')        
+                return redirect('/')
         
         return render_template('login.html')
     
@@ -59,6 +68,6 @@ def make_endpoints(app):
     @login_required
     def logout():
         logout_user()
-        return redirect('home')
+        return redirect('/')
    
    
