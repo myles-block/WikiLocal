@@ -34,11 +34,26 @@ def make_endpoints(app):
         backend = Backend(info_bucket_name='wiki_info')
         author_images = {'Manish':backend.get_image('manish.jpeg'),
                         'Gabriel': backend.get_image('gabrielPic.jpg'),
-                        'Myles': backend.get_image('manish.jpeg')}
+                        'Myles': backend.get_image('mylesPic.jpg')}
         return render_template('about.html',author_images = author_images)
     
     @app.route('/login')
     def login():
         return render_template('login.html')
+
+    @app.route('/signup', methods =['GET','POST'])
+    def signup():
+        msg = ''
+        backend = Backend()
+        if request.method == 'POST': 
+            completed = backend.sign_up(request.form['username'], request.form['password'])
+            if completed:
+                msg = "Successfully Completed!!!"
+                return render_template('signup.html', message = msg)
+                #redirect home
+            else:
+                msg = "This username already exists! Pick a new one!"
+                return render_template('signup.html', message = msg)
+        return render_template('signup.html')
     
    

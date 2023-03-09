@@ -1,6 +1,7 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 import base64
+import hashlib
 
 class User:
 
@@ -15,13 +16,14 @@ class User:
     
 class Backend:
 
-    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info'):
+    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info', user_bucket_name = 'wiki_login'):
         '''
         storage: Instantiates a client
         info_bucket_name : bucket nanme to store the data related to pages and about '''
 
         self.storage_client = storage_client
         self.info_bucket = self.storage_client.bucket(info_bucket_name)
+        self.user_bucket = self.storage_client.bucket(user_bucket_name)
         
     def get_wiki_page(self, name): # 1 
 
@@ -52,9 +54,23 @@ class Backend:
     def upload(self,file,filename):
         pass
 
-        
-    def sign_up(self):
-        pass
+    def sign_up(self, username, password):
+        ''' Adds data to the content bucket 
+         user.get_id : username 
+         user : user object
+         '''
+        # return user object & redirect home 
+        salted = f"{username}{'gamma'}{password}"
+        hashed = hashlib.md5(salted.encode())
+        blob = self.user_bucket.blob(username)
+        isExist = storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client)
+        if isExist: # if exist
+            return False # unsuccessful
+        else:
+            with blob.open("w") as f:
+                f.write(hashed.hexdigest())
+            return True # successful
+        #return postive sign up, or negative sign up
 
     def sign_in(self):
         pass
