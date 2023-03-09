@@ -6,13 +6,11 @@ Upload
 {% block content %}
 <h3>Upload a doc to the wiki</h3>
 
-<form method="post" action="/upload">
-    <input type="text" name="Wikiname" placeholder="Wikiname" required/>
-    <input type="file" id="myFile" name="upload">
+
+<form method="post" action="/upload" enctype="multipart/form-data">
+    <input type="text" name="wikiname" placeholder="Wikiname" required/>
+    <input type="file" id="myFile" name="file">
     <input type="submit">
-    <!-- <input type="text" name="username" placeholder="Wikiname" required/>
-    <input type="text" name="password" placeholder="Password" required/>
-    <input type="submit" value="Sign Up"/> -->
     {% if message %}
         <div>{{ message }}</div>
        {% endif %}
@@ -21,3 +19,4 @@ Upload
 
 
 {% endblock %}
+
