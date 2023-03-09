@@ -28,7 +28,8 @@
         <li><a href="/">Home</a></li>
         <li><a href="/pages">Pages</a></li>
         <li><a href="/about">About</a></li>
-        {% if current_user.is_authenticated %}        
+        {% if current_user.is_authenticated %}
+        <li><a href="/upload">Upload</a></li>        
         <li><a href="/logout">Logout</a></li>
         {% else %}
         <li><a href="/login">Sign in</a></li>
