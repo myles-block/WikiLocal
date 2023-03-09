@@ -108,6 +108,7 @@ def test_get_image_failure(backend,fake_blob):
     backend.info_bucket.blob.assert_called_once_with('fake_not_existing_image.jpeg')
     fake_blob.download_as_bytes.assert_called_once()
 
-    
+
+
 
     
