@@ -16,23 +16,32 @@ class User:
     
 class Backend:
 
-    def __init__(self, storage_client = storage.Client(), bucket_name = 'wiki_info'):
+    def __init__(self, storage_client = storage.Client(), info_bucket_name = 'wiki_info', user_bucket_name = 'wiki_login'):
+        '''
+        storage: Instantiates a client
+        info_bucket_name : bucket nanme to store the data related to pages and about '''
+
         self.storage_client = storage_client
-        self.bucket = self.storage_client.bucket(bucket_name)
+        self.info_bucket = self.storage_client.bucket(info_bucket_name)
+        self.user_bucket = self.storage_client.bucket(user_bucket_name)
         
     def get_wiki_page(self, name): # 1 
+
         ''' Gets an uploaded page from the content bucket '''
-        blob = self.bucket.blob(name)
+        
+        blob = self.info_bucket.blob(name)
         name_data = blob.download_as_bytes()
         if not name_data.strip():
             return None 
         return name_data.decode('utf-8')
 
+
+
     def get_all_page_names(self):
         ''' Gets all the names of the pages uploaded to the wiki'''
         page_names = []
 
-        pages = self.storage_client.list_blobs(self.bucket)
+        pages = self.storage_client.list_blobs(self.info_bucket)
 
         for page in pages:
             extension = page.name.find('.')
@@ -42,7 +51,7 @@ class Backend:
 
         return page_names
 
-    def upload(self):
+    def upload(self,file,filename):
         pass
 
     def sign_up(self, username, password):
@@ -53,8 +62,8 @@ class Backend:
         # return user object & redirect home 
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
-        blob = self.bucket.blob(username)
-        isExist = storage.Blob(bucket= self.bucket, name=username).exists(self.storage_client)
+        blob = self.user_bucket.blob(username)
+        isExist = storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client)
         if isExist: # if exist
             return False # unsuccessful
         else:
@@ -70,14 +79,16 @@ class Backend:
 
         ''' Gets an image from the content bucket. '''
 
-        blob = self.bucket.blob(image_name)
-        image_data=blob.download_as_bytes()
-        if image_data:
-            base64_image=base64.b64encode(image_data).decode('utf-8')
-        return base64_image
+        try: 
+            blob = self.info_bucket.blob(image_name)
+            image_data=blob.download_as_bytes()
+            if image_data:
+                base64_image=base64.b64encode(image_data).decode('utf-8')
+                return base64_image
+        except FileNotFoundError : #handling the not existing file
+            raise ValueError('Image Name doesnot exist in the bucket')
         
-# custom=Backend('wiki_info')
-# print(custom.get_image('manish.jpeg'))
+
         
     
 

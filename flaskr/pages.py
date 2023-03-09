@@ -1,6 +1,6 @@
 from flask import render_template ,url_for ,flash , request , redirect 
 from flaskr.backend import Backend 
-
+from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
 
@@ -24,14 +24,14 @@ def make_endpoints(app):
 
     @app.route('/pages')
     def pages():
-        backend= Backend(bucket_name='wiki_info')
+        backend= Backend(info_bucket_name='wiki_info')
 
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places = page_names)
 
     @app.route('/about')
     def about():
-        backend = Backend(bucket_name='wiki_info')
+        backend = Backend(info_bucket_name='wiki_info')
         author_images = {'Manish':backend.get_image('manish.jpeg'),
                         'Gabriel': backend.get_image('gabrielPic.jpg'),
                         'Myles': backend.get_image('mylesPic.jpg')}
@@ -44,7 +44,7 @@ def make_endpoints(app):
     @app.route('/signup', methods =['GET','POST'])
     def signup():
         msg = ''
-        backend = Backend(bucket_name= 'wiki_login')
+        backend = Backend()
         if request.method == 'POST': 
             completed = backend.sign_up(request.form['username'], request.form['password'])
             if completed:
