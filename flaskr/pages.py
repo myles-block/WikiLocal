@@ -1,7 +1,7 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
 from flask_login import login_user, login_required, logout_user
-from werkzeug.utils import secure_filename
 from flaskr.backend import Backend, User
+from werkzeug.utils import secure_filename
 from google.cloud import storage
 
 def make_endpoints(app):
@@ -36,15 +36,12 @@ def make_endpoints(app):
         backend = Backend(info_bucket_name='wiki_info')
         author_images = {'Manish':backend.get_image('manish.jpeg'),
                         'Gabriel': backend.get_image('gabrielPic.jpg'),
-                        'Myles': backend.get_image('manish.jpeg')}
+                        'Myles': backend.get_image('mylesPic.jpg')}
         return render_template('about.html',author_images = author_images)
     
     @app.login_manager.user_loader
     def load_user(user_id):
         client = storage.Client()
-        # Construct the Cloud Storage bucket name
-
-        # Retrieve the user object from the Cloud Storage bucket
         bucket = client.bucket('wiki_login')
         blob = bucket.blob(user_id)
         user = User(blob.name)
@@ -65,6 +62,21 @@ def make_endpoints(app):
                 return render_template('login.html', message = 'Invalid username or password')
         
         return render_template('login.html', msg = '')
+
+    @app.route('/signup', methods =['GET','POST'])
+    def signup():
+        msg = ''
+        backend = Backend()
+        if request.method == 'POST': 
+            completed = backend.sign_up(request.form['username'], request.form['password'])
+            if completed:
+                msg = "Successfully Completed!!!"
+                return render_template('signup.html', message = msg)
+                #redirect home
+            else:
+                msg = "This username already exists! Pick a new one!"
+                return render_template('signup.html', message = msg)
+        return render_template('signup.html')
     
     @app.route("/logout")
     @login_required

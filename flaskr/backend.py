@@ -3,6 +3,7 @@ from google.cloud import storage
 from flask_login import login_manager
 import hashlib
 import base64
+import hashlib
 
 
 class User:
@@ -26,7 +27,7 @@ class Backend:
         self.storage_client = storage_client
         self.info_bucket = self.storage_client.bucket(info_bucket_name)
         self.user_bucket = self.storage_client.bucket(user_bucket_name)
-    
+        
     def get_wiki_page(self, name): # 1 
 
         ''' Gets an uploaded page from the content bucket '''
@@ -56,9 +57,23 @@ class Backend:
     def upload(self,file,filename):
         pass
 
-        
-    def sign_up(self):
-        pass
+    def sign_up(self, username, password):
+        ''' Adds data to the content bucket 
+         user.get_id : username 
+         user : user object
+         '''
+        # return user object & redirect home 
+        salted = f"{username}{'gamma'}{password}"
+        hashed = hashlib.md5(salted.encode())
+        blob = self.user_bucket.blob(username)
+        isExist = storage.Blob(bucket= self.user_bucket, name=username).exists(self.storage_client)
+        if isExist: # if exist
+            return False # unsuccessful
+        else:
+            with blob.open("w") as f:
+                f.write(hashed.hexdigest())
+            return True # successful
+        #return postive sign up, or negative sign up
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''
