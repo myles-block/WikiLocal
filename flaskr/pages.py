@@ -70,9 +70,11 @@ def make_endpoints(app):
         if request.method == 'POST': 
             completed = backend.sign_up(request.form['username'], request.form['password'])
             if completed:
-                msg = "Successfully Completed!!!"
-                return render_template('signup.html', message = msg)
-                #redirect home
+                user = backend.sign_in(request.form['username'], request.form['password'])
+                login_user(user)
+                return redirect('/')
+                # msg = "Successfully Completed!!! Now Sign In!!!"
+                # return render_template('signup.html', message = msg)
             else:
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message = msg)
