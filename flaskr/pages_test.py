@@ -34,6 +34,29 @@ def test_user():
     # After we have finished testing, just delete it.
     blob.delete()
 
+@pytest.fixture
+def test_newuser():
+    username = 'new_user'
+    password = 'new_user'
+    user = User(username)
+    # Upload a test user to the bucket.
+    user.save(password)
+    yield user
+    blob = user.bucket.blob(username)
+    # After we have finished testing, just delete it.
+    blob.delete()
+
+@pytest.fixture
+def test_repeatuser():
+    username = 'new_user_same'
+    password = 'new_user'
+    user = User(username)
+    # Upload a test user to the bucket.
+    user.save(password)
+    yield user
+    # blob = user.bucket.blob(username)
+
+
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
 def test_home_page(client):
@@ -92,6 +115,20 @@ def test_logout(client, test_user):
     assert response.status_code == 302
     assert current_user.is_anonymous
     
+
+def test_signup(client, test_user):
+    # Send a response to the route trying to verify for the test user.
+    response = client.post('/signup', data={'username': 'new_user', 'password': 'new_user'})
+    # We should get redirected to the home page, resulting in a 302 code.
+    assert response.status_code == 302
+    # The current_user should be updated to 'testing'.
+    assert current_user.username == 'new_user'
+
+def test_incorrect_signup(client, test_repeatuser):
+    # Send a response to the route trying to hit the same user.
+    response = client.post('/signup', data={'username': 'new_user_same', 'password': 'new_user'})
+    # We should not go to the home page, resulting in a 200 code.
+    assert response.status_code == 200
 
 
 
