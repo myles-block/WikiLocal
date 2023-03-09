@@ -39,6 +39,14 @@ def user_id():
 def user_password():
     return 'testpassword'
 
+@pytest.fixture
+def user_creation():
+    return 'new_username_incoming'
+
+@pytest.fixture
+def user_creation_password():
+    return 'new_username_password'
+
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
 def test_home_page(client):
@@ -107,6 +115,19 @@ def test_logout(authenticated_client):
     # Check that the logout was successful
     assert response.status_code == 200
     assert not current_user.is_authenticated
+
+def test_signup(client, username_creation, user_creation_password):
+    # Signs Up A User
+    response = client.post('/signup', data=dict(
+        username=username_creation,
+        password=user_creation_password
+    ), follow_redirects=True)
+
+    # Check that the sign up was successful
+    assert response.status_code == 302
+    assert current_user.username == "new_username_incoming"
+    assert current_user.is_authenticated
+
 
 
     
