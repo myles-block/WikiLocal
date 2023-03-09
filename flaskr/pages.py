@@ -1,6 +1,8 @@
-from flask import render_template ,url_for ,flash , request , redirect 
-from flaskr.backend import Backend 
+from flask import render_template, Flask, url_for, flash, request, redirect
+from flask_login import login_user, login_required, logout_user
+from flaskr.backend import Backend, User
 from werkzeug.utils import secure_filename
+from google.cloud import storage
 
 def make_endpoints(app):
 
@@ -15,7 +17,7 @@ def make_endpoints(app):
     
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route('/page/<page_name>')
+    @app.route('/pages/<page_name>')
     def page(page_name):
         backend = Backend()
         file_name = page_name + '.txt'
@@ -37,9 +39,29 @@ def make_endpoints(app):
                         'Myles': backend.get_image('mylesPic.jpg')}
         return render_template('about.html',author_images = author_images)
     
-    @app.route('/login')
+    @app.login_manager.user_loader
+    def load_user(user_id):
+        client = storage.Client()
+        bucket = client.bucket('wiki_login')
+        blob = bucket.blob(user_id)
+        user = User(blob.name)
+        return user
+
+    @app.route('/login', methods=['GET','POST'])
     def login():
-        return render_template('login.html')
+        backend = Backend()
+
+        if request.method == 'POST':
+            user = backend.sign_in(request.form['username'], request.form['password'])
+
+            if user:
+                print('We are getting a user')
+                login_user(user)
+                return redirect('/')
+            else:
+                return render_template('login.html', message = 'Invalid username or password')
+        
+        return render_template('login.html', msg = '')
 
     @app.route('/signup', methods =['GET','POST'])
     def signup():
@@ -55,9 +77,11 @@ def make_endpoints(app):
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message = msg)
         return render_template('signup.html')
-
-    @app.route('/upload')
-    def upload():
-        return render_template('upload.html')
     
+    @app.route("/logout")
+    @login_required
+    def logout():
+        logout_user()
+        return redirect('/')
+   
    
