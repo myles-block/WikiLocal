@@ -5,11 +5,12 @@ from flask import Flask
 from flask_login import LoginManager
 
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 
 
 # The flask terminal command inside "run-flask.sh" searches for
-# this method inside of __init__.py (containing flaskr module 
+# this method inside of __init__.py (containing flaskr module
 # properties) as we set "FLASK_APP=flaskr" before running "flask".
 def create_app(test_config=None):
     # Create and configure the app.
@@ -17,9 +18,7 @@ def create_app(test_config=None):
 
     # This is the default secret key used for login sessions
     # By default the dev environment uses the key 'dev'
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-    )  
+    app.config.from_mapping(SECRET_KEY='dev',)
 
     login_manager = LoginManager()
     login_manager.init_app(app)

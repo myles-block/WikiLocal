@@ -4,7 +4,8 @@ from flask_login import LoginManager, login_user, current_user, logout_user, log
 
 import pytest
 
-# See https://flask.palletsprojects.com/en/2.2.x/testing/ 
+
+# See https://flask.palletsprojects.com/en/2.2.x/testing/
 # for more info on testing
 @pytest.fixture
 def app():
@@ -16,11 +17,13 @@ def app():
 
     return app
 
+
 @pytest.fixture
 def client(app):
     with app.test_client() as client:
         with app.app_context():
             yield client
+
 
 @pytest.fixture
 def test_user():
@@ -34,6 +37,7 @@ def test_user():
     # After we have finished testing, just delete it.
     blob.delete()
 
+
 @pytest.fixture
 def test_newuser():
     username = 'new_user'
@@ -45,6 +49,7 @@ def test_newuser():
     blob = user.bucket.blob(username)
     # After we have finished testing, just delete it.
     blob.delete()
+
 
 @pytest.fixture
 def test_repeatuser():
@@ -64,6 +69,7 @@ def test_home_page(client):
     assert resp.status_code == 200
     assert b"Welcome To Our Wiki-fun in your local\n" in resp.data
 
+
 # TODO(Project 1): Write tests for other routes.
 def test_about_page(client):
     resp = client.get('/about')
@@ -71,6 +77,7 @@ def test_about_page(client):
     assert b"Manish" in resp.data
     assert b"Gabriel" in resp.data
     assert b"Myles" in resp.data
+
 
 def test_pages_page(client):
     resp = client.get('/pages')
@@ -81,55 +88,76 @@ def test_pages_page(client):
     # Check we are only getting text files.
     assert b"gabrielPic" not in resp.data
 
+
 def test_wiki_page(client):
     resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
     assert resp.status_code == 200
-    
+
     # Check we are getting the information contained inside the text file.
     assert b"GEORGETOWN WATERFRONT PARK" in resp.data
     assert b"Located along the banks of the Potomac," in resp.data
 
+
 def test_login(client, test_user):
     # Send a response to the route trying to verify for the test user.
-    response = client.post('/login', data={'username': 'testing', 'password': 'testing'})
+    response = client.post('/login',
+                           data={
+                               'username': 'testing',
+                               'password': 'testing'
+                           })
     # We should get redirected to the home page, resulting in a 302 code.
     assert response.status_code == 302
     # The current_user should be updated to 'testing'.
     assert current_user.username == 'testing'
 
+
 def test_login_incorrect_password(client, test_user):
     # If we pass the wrong information, we will not be redirected.
-    response = client.post('/login', data={'username': 'testing', 'password': 'wrongpassword'})
+    response = client.post('/login',
+                           data={
+                               'username': 'testing',
+                               'password': 'wrongpassword'
+                           })
     assert response.status_code == 200
     # We do not have a user authenticated as nobody actually logged in.
     assert current_user.is_authenticated == False
 
+
 def test_logout(client, test_user):
-    response = client.post('/login', data={'username': 'testing', 'password': 'testing'})
+    response = client.post('/login',
+                           data={
+                               'username': 'testing',
+                               'password': 'testing'
+                           })
     assert response.status_code == 302
     assert current_user.is_authenticated
     assert current_user.username == 'testing'
-    
+
     # Check if logging out actually works
     response = client.get('/logout')
     assert response.status_code == 302
     assert current_user.is_anonymous
-    
+
 
 def test_signup(client, test_user):
     # Send a response to the route trying to verify for the test user.
-    response = client.post('/signup', data={'username': 'new_user', 'password': 'new_user'})
+    response = client.post('/signup',
+                           data={
+                               'username': 'new_user',
+                               'password': 'new_user'
+                           })
     # We should get redirected to the home page, resulting in a 302 code.
     assert response.status_code == 302
     # The current_user should be updated to 'testing'.
     assert current_user.username == 'new_user'
 
+
 def test_incorrect_signup(client, test_repeatuser):
     # Send a response to the route trying to hit the same user.
-    response = client.post('/signup', data={'username': 'new_user_same', 'password': 'new_user'})
+    response = client.post('/signup',
+                           data={
+                               'username': 'new_user_same',
+                               'password': 'new_user'
+                           })
     # We should not go to the home page, resulting in a 200 code.
     assert response.status_code == 200
-
-
-
-    
