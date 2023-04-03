@@ -7,3 +7,11 @@ lint:
   - yapf --style google --recursive --diff .
  only:
   - pushes
+
+unittest:
+ stage: test
+ script:
+  - pip install -r requirements.txt
+  - pytest .
+ only:
+  - merge_requests
