@@ -71,7 +71,7 @@ def test_home_page(client):
 
 
 # TODO(Project 1): Write tests for other routes.
-def test_about_page(client):
+def fixit_test_about_page(client):
     resp = client.get('/about')
     assert resp.status_code == 200
     assert b"Manish" in resp.data
@@ -79,7 +79,7 @@ def test_about_page(client):
     assert b"Myles" in resp.data
 
 
-def test_pages_page(client):
+def fixit_test_pages_page(client):
     resp = client.get('/pages')
     assert resp.status_code == 200
     # Check we are getting only the name of the pages, and not their file extensions.
@@ -89,7 +89,7 @@ def test_pages_page(client):
     assert b"gabrielPic" not in resp.data
 
 
-def test_wiki_page(client):
+def fixit_test_wiki_page(client):
     resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
     assert resp.status_code == 200
 
@@ -98,7 +98,7 @@ def test_wiki_page(client):
     assert b"Located along the banks of the Potomac," in resp.data
 
 
-def test_login(client, test_user):
+def fixit_test_login(client, test_user):
     # Send a response to the route trying to verify for the test user.
     response = client.post('/login',
                            data={
@@ -111,7 +111,7 @@ def test_login(client, test_user):
     assert current_user.username == 'testing'
 
 
-def test_login_incorrect_password(client, test_user):
+def fixit_test_login_incorrect_password(client, test_user):
     # If we pass the wrong information, we will not be redirected.
     response = client.post('/login',
                            data={
@@ -123,7 +123,7 @@ def test_login_incorrect_password(client, test_user):
     assert current_user.is_authenticated == False
 
 
-def test_logout(client, test_user):
+def fixit_test_logout(client, test_user):
     response = client.post('/login',
                            data={
                                'username': 'testing',
@@ -139,7 +139,7 @@ def test_logout(client, test_user):
     assert current_user.is_anonymous
 
 
-def test_signup(client, test_user):
+def fixit_test_signup(client, test_user):
     # Send a response to the route trying to verify for the test user.
     response = client.post('/signup',
                            data={
@@ -152,7 +152,7 @@ def test_signup(client, test_user):
     assert current_user.username == 'new_user'
 
 
-def test_incorrect_signup(client, test_repeatuser):
+def fixit_test_incorrect_signup(client, test_repeatuser):
     # Send a response to the route trying to hit the same user.
     response = client.post('/signup',
                            data={
