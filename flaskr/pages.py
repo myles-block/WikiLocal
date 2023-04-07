@@ -127,3 +127,23 @@ def make_endpoints(app):
             return True
         else:
             return False
+    
+    @app.route('/search',methods = ["GET","POST"])
+    def search():
+        '''  post the resulted pages from the user quer 
+        
+
+        '''
+        backend = Backend()
+        if request.method == "POST":
+            search_query = request.form.get('search_query')
+            search_by = request.form.get('search_by')
+            if search_by == 'title':
+                resulted_pages = backend.search_by_title(search_query)
+                if len(resulted_pages) > 0:
+                    return render_template('pages.html',places = resulted_pages)
+                else:
+                    message = f'No such pages found for {search_query}'
+                    return render_template('pages.html',message = message )
+
+

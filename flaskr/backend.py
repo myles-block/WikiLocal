@@ -137,8 +137,13 @@ class Backend:
         return None
 
     def get_image(self, image_name):  # 2
-        ''' Gets an image from the content bucket.
-            image_name : name of the image to be get from bucket  '''
+        '''  Returns encoded image in base64 string 
+        if no image_name found , raises Value Error 
+        
+        Args : 
+            image_name : name of the image to be get from bucket  
+            
+        '''
 
         try:
             blob = self.info_bucket.blob(image_name)
@@ -148,3 +153,40 @@ class Backend:
                 return base64_image
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
+    
+
+    def title_content(self):
+        ''' return dictionary with the title name and content 
+        
+        '''
+        title_content = {}
+        all_pages_names = self.get_all_page_names()
+        for page in all_pages_names:
+            if page not in title_content:
+                content = self.get_wiki_page(page+'.txt')
+                title_content[page]=content
+        return title_content 
+
+                
+    def search_by_title(self,query):
+
+        """  Returns list of pages(string) if query matched with pages 
+        if query doesnot found in pages titles return empty list
+
+        Args : 
+
+        query : text value obtained from search form 
+
+        """
+        final_results = []
+        pages_contents = self.title_content()
+        for page_title in pages_contents:
+            if query.lower() in page_title.lower():
+                final_results.append(page_title)
+        return final_results
+        
+
+            
+
+# backend = Backend()
+# print(backend.title_content())
