@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from google.cloud import storage
 
 
-def make_endpoints(app):
+def make_endpoints(app,backend):
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -21,7 +21,7 @@ def make_endpoints(app):
     @app.route('/pages/<page_name>')
     def page(page_name):
         '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
-        backend = Backend()
+
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
         return render_template('page.html',
@@ -30,14 +30,13 @@ def make_endpoints(app):
 
     @app.route('/pages')
     def pages():
-        backend = Backend(info_bucket_name='wiki_info')
 
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places=page_names)
 
     @app.route('/about')
     def about():
-        backend = Backend(info_bucket_name='wiki_info')
+   
         author_images = {
             'Manish': backend.get_image('manish.jpeg'),
             'Gabriel': backend.get_image('gabrielPic.jpg'),
@@ -55,7 +54,7 @@ def make_endpoints(app):
         This route attempts to log a user with a POST request. 
         Otherwise, it just renders a login form where users can try to log in with their credentials
         '''
-        backend = Backend()
+
 
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
@@ -73,7 +72,6 @@ def make_endpoints(app):
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
         msg = ''
-        backend = Backend()
         if request.method == 'POST':
             completed = backend.sign_up(request.form['username'],
                                         request.form['password'])
@@ -99,7 +97,7 @@ def make_endpoints(app):
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
-        backend = Backend(info_bucket_name='wiki_info')
+
         if request.method == 'POST':
             print(request.files)
             if 'file' not in request.files:
@@ -130,11 +128,9 @@ def make_endpoints(app):
     
     @app.route('/search',methods = ["GET","POST"])
     def search():
-        '''  post the resulted pages from the user quer 
-        
+        '''  post the resulted pages from the user query in pages.html
 
         '''
-        backend = Backend()
         if request.method == "POST":
             search_query = request.form.get('search_query')
             search_by = request.form.get('search_by')
@@ -145,5 +141,14 @@ def make_endpoints(app):
                 else:
                     message = f'No such pages found for {search_query}'
                     return render_template('pages.html',message = message )
+            elif search_by == 'content':
+                resulted_pages = backend.search_by_title(search_query)
+                if len(resulted_pages) > 0:
+                    return render_template('pages.html',places = resulted_pages)
+                else:
+                    message = f"No such pages found with '{search_query}' in the content "
+                    return render_template('pages.html',message = message )
+        else:
+            return redirect('/pages.html',200)
 
 

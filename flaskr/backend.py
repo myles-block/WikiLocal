@@ -154,9 +154,10 @@ class Backend:
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
     
-
+     #helper function
     def title_content(self):
         ''' return dictionary with the title name and content 
+        example : {'wiki_page1': 'content'}
         
         '''
         title_content = {}
@@ -184,6 +185,24 @@ class Backend:
             if query.lower() in page_title.lower():
                 final_results.append(page_title)
         return final_results
+
+    def search_by_content(self,query):
+        """  Returns list of pages(string) if query found in content
+        if query doesnot found in page-countent  returns empty list
+
+        Args : 
+
+        query : text value obtained from search form 
+
+        """
+        final_results = []
+        pages_contents = self.title_content()
+        for page_title , page_content in pages_contents.items():
+            if query.lower() in page_content.lower():
+                final_results.append(page_title)
+        return final_results 
+
+        
         
 
             
