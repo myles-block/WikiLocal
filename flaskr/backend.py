@@ -203,9 +203,7 @@ class Backend:
         return final_results 
 
         
-        
 
-            
 
 # backend = Backend()
 # print(backend.title_content())
