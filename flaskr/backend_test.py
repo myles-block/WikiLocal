@@ -181,7 +181,7 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
 
         # calling the backend method sign_in
         result = backend.sign_in(fake_username, fake_password)
-        print('result is', result)
+        # print('result is', result)
 
         # checking instance of User class
         assert result is None
@@ -190,3 +190,68 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     backend.user_bucket.blob.assert_called_once_with(fake_username)
     mock_exists.assert_called_once()
     fake_blob.download_as_bytes.assert_called_once()
+
+
+
+
+@pytest.fixture 
+def mock_title_content():
+    '''  mocking title content method of the backend to inject in search by title and search by content test cases 
+    '''
+
+    with patch('flaskr.backend.Backend.title_content',return_value = {'Page1' : 'Page 1 content'},autospec=True) as mock_title_content:
+        yield mock_title_content
+
+
+def test_search_by_title_query_in_title(backend, mock_title_content):
+
+    '''  testing search by title with query which is in page title
+
+    '''
+    result = backend.search_by_title('page')
+    expected = ['Page1']
+
+    assert result == expected
+    
+    mock_title_content.assert_called_once()
+
+
+def test_search_by_title_no_query_in_title(backend, mock_title_content):
+
+    '''  testing search by title with query which is not  in page title
+
+    '''
+    result = backend.search_by_title('gamma')
+    expected = []
+
+    assert result == expected
+    
+    mock_title_content.assert_called_once()
+
+def test_search_by_content_query_in_title(backend, mock_title_content):
+
+    '''  testing search by content with query which is in content of the page 
+
+    '''
+    result = backend.search_by_content('page')
+    expected = ['Page1']
+
+    assert result == expected
+    
+    mock_title_content.assert_called_once()
+
+
+def test_search_by_content_query_in_title(backend, mock_title_content):
+
+    '''  testing search by title with query which is not in content of the page
+
+    '''
+    result = backend.search_by_content('gamma')
+    expected = []
+
+    assert result == expected
+    
+    mock_title_content.assert_called_once()
+
+
+
