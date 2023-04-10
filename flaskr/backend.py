@@ -6,10 +6,11 @@ which define how the application interacts with the storage system.
 '''
 
 from google.cloud import storage
-from flask_login import login_manager
+from datetime import datetime
 import hashlib
 import base64
 import hashlib
+import json
 
 
 class User:
@@ -76,11 +77,17 @@ class Backend:
             name : name of the page files 
            '''
 
+        # Find the wiki-page's file in the GCS bucket.
         blob = self.info_bucket.blob(name)
-        name_data = blob.download_as_bytes()
-        if not name_data.strip():
+
+        # Get its content as a dictionary using the JSON API
+        name_data = json.loads((blob.download_as_string()), parse_constant=None)
+
+        # If we don't get anything, the wiki-page does not exist.
+        if not name_data:
             return None
-        return name_data.decode('utf-8')
+
+        return name_data
 
     def get_all_page_names(self):
         ''' Gets all the names of the pages uploaded to the wiki'''
@@ -102,7 +109,27 @@ class Backend:
          filename : name of the file user selected
          '''
         blob = self.info_bucket.blob(filename)
-        blob.upload_from_file(file)
+
+        # Get today's date in YYYY-MM-DD format.
+        date = datetime.today().strftime('%Y-%m-%d')
+
+        # Set up the dictionary containing all the wiki-page's metadata.
+        metadata = {
+            'wiki_page': filename,
+            'content': file.read().decode('utf-8'),
+            'date_created': date,
+            'upvotes': 0,
+            'who_upvoted': None,
+            'downvotes': 0,
+            'who_downvoted': None,
+            'comments': []
+        }
+
+        # Convert it to a JSON file.
+        metadata_json = json.dumps(metadata)
+
+        # Save it to the GCS bucket.
+        blob.upload_from_string(metadata_json, content_type='application/json')
 
     def sign_up(self, username, password):
         ''' Adds data to the content bucket 
