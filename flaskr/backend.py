@@ -6,11 +6,10 @@ which define how the application interacts with the storage system.
 '''
 
 from google.cloud import storage
-from flask_login import login_manager
+from datetime import datetime
 import hashlib
 import base64
 import hashlib
-from datetime import datetime
 import json
 
 

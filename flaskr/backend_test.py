@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import base64
 import hashlib
-from datetime import datetime
 import json
 import io
 from freezegun import freeze_time
