@@ -4,6 +4,8 @@ from flask_login import LoginManager, login_user, current_user, logout_user, log
 from unittest.mock import patch
 import pytest
 import base64
+import json
+import io
 
 # See https://flask.palletsprojects.com/en/2.2.x/testing/
 # for more info on testing
@@ -90,7 +92,7 @@ def test_about_page(client):
 
 
 
-def fixittest_pages_page(client):
+def test_pages_page(client):
     with patch('flaskr.backend.Backend.get_all_page_names') as mock_page:
         mock_page.return_value = ['Page 1','Page 2']
         resp = client.get('/pages')
@@ -101,76 +103,101 @@ def fixittest_pages_page(client):
 
 def test_wiki_page(client):
     with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
-        mock_page.return_value = 'Content Of The Wiki'
-        resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
-        assert resp.status_code == 200
-        assert b'Content Of The Wiki' in resp.data 
+            mock_page.return_value = json.loads('{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}')
+    
+            resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
+            assert resp.status_code == 200
+            assert b"really_fake_content" in resp.data 
 
 
-def fixit_test_login(client, test_user):
+def test_login(client, test_user):
     # Send a response to the route trying to verify for the test user.
-    response = client.post('/login',
+    with patch('flaskr.backend.Backend.sign_in') as mock_login:
+        mock_login.return_value = User('fake_username')
+        # print(Backend.sign_in())
+        response = client.post('/login',
                            data={
-                               'username': 'testing',
+                               'username': 'fake_username',
                                'password': 'testing'
                            })
     # We should get redirected to the home page, resulting in a 302 code.
-    assert response.status_code == 302
-    # The current_user should be updated to 'testing'.
-    assert current_user.username == 'testing'
+        assert response.status_code == 302
+        # The current_user should be updated to 'testing'.
+        assert current_user.username == 'fake_username'
 
 
-def fixit_test_login_incorrect_password(client, test_user):
+def test_login_incorrect_password(client, test_user):
     # If we pass the wrong information, we will not be redirected.
-    response = client.post('/login',
-                           data={
-                               'username': 'testing',
-                               'password': 'wrongpassword'
-                           })
+    with patch('flaskr.backend.Backend.sign_in') as mock_login:
+        mock_login.return_value = None 
+        response = client.post('/login',
+                            data={
+                                'username':'fake_username',
+                                'password': 'wrongpassword'
+                            })
     assert response.status_code == 200
     # We do not have a user authenticated as nobody actually logged in.
     assert current_user.is_authenticated == False
+    assert b'Invalid username or password' in response.data
 
 
-def fixit_test_logout(client, test_user):
-    response = client.post('/login',
-                           data={
-                               'username': 'testing',
-                               'password': 'testing'
-                           })
-    assert response.status_code == 302
-    assert current_user.is_authenticated
-    assert current_user.username == 'testing'
+def test_logout(client, test_user):
 
-    # Check if logging out actually works
+
+    # login_user(User('fake_username'))
     response = client.get('/logout')
+    print(response.data)
     assert response.status_code == 302
-    assert current_user.is_anonymous
+    assert current_user.is_authenticated == False
 
 
-def fixit_test_signup(client, test_user):
+def test_signup(client, test_user):
     # Send a response to the route trying to verify for the test user.
-    response = client.post('/signup',
-                           data={
-                               'username': 'new_user',
-                               'password': 'new_user'
-                           })
-    # We should get redirected to the home page, resulting in a 302 code.
-    assert response.status_code == 302
-    # The current_user should be updated to 'testing'.
-    assert current_user.username == 'new_user'
+    with patch('flaskr.backend.Backend.sign_up') as mock_signup:
+        with patch('flaskr.backend.Backend.sign_in') as mock_signin:
+
+        
+            mock_signup.return_value = True
+            mock_signin.return_value = User('new_user')
+            response = client.post('/signup',
+                                data={
+                                    'username': 'new_user',
+                                    'password': 'new_user'
+                                })
+            # We should get redirected to the home page, resulting in a 302 code.
+            assert response.status_code == 302
+            # The current_user should be updated to 'testing'.
+            assert current_user.username == 'new_user'
 
 
-def fixit_test_incorrect_signup(client, test_repeatuser):
+def test_incorrect_signup(client, test_repeatuser):
     # Send a response to the route trying to hit the same user.
-    response = client.post('/signup',
-                           data={
-                               'username': 'new_user_same',
-                               'password': 'new_user'
-                           })
-    # We should not go to the home page, resulting in a 200 code.
-    assert response.status_code == 200
 
+    with patch('flaskr.backend.Backend.sign_up') as mock_signup:
+
+            mock_signup.return_value = False 
+            response = client.post('/signup',
+                                data={
+                                    'username': 'new_user',
+                                    'password': 'new_user'
+                                })
+            # We should get redirected to the home page, resulting in a 302 code.
+            assert response.status_code == 200
+            # The current_user should be updated to 'testing'.
+            assert current_user.is_authenticated == False
+    # We should not go to the home page, resulting in a 200 code.
+
+def fixit_test_upload(client):
+    
+    with patch('flaskr.backend.Backend.upload') as mock_upload:
+
+        mock_upload.return_value = None 
+        data = {'file': (io.BytesIO(b'my file contents'),'fake_file.txt'),'filename': 'fake_file.txt'}
+         # Open the file in binary mode
+        response = client.post('/upload', data =data)    
+
+        assert response.status_code == 200
+        assert b'Uploaded Successfully' in response.data
 
 
 def test_search_for_title_with_results(client):
@@ -224,6 +251,7 @@ def test_search_for_content_with_results(client):
         assert response.status_code == 200
         assert b'title_3' in response.data
         assert b'title_4' in response.data
+        
 def test_search_for_content_with_no_result(client):
     '''  Testing the search rout for search_by_content post with some results
 

@@ -1,5 +1,9 @@
 {% extends "main.html" %}
 {% block title %} {{name}} {% endblock %}
 {% block content %}
-    {{content}}
+<head>
+    <link rel="stylesheet" href="../static/page.css" />
+</head>
+<h3> {{ name }}</h3>
+    <p class="content">{{content.content}}</p>
 {% endblock %}
