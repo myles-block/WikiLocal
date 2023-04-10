@@ -7,6 +7,7 @@ import json
 import io
 from freezegun import freeze_time
 
+
 # TODO(Project 1): Write tests for Backend methods.
 @pytest.fixture
 def fake_blob():
@@ -83,18 +84,23 @@ def test_get_wiki_page(backend, fake_blob):
     # Getting the dummy data
     result = backend.get_wiki_page('really_fake_page.txt')
 
-    expected = {'wiki_page' : 'really_fake_page', 'content' : 'really_fake_content', 'date_created' : '0000-00-00',
-        'upvotes' : 0,
-        'who_upvoted' : None,
-        'downvotes' : 0,
-        'who_downvoted' : None,
-        'comments' : []}
-        
+    expected = {
+        'wiki_page': 'really_fake_page',
+        'content': 'really_fake_content',
+        'date_created': '0000-00-00',
+        'upvotes': 0,
+        'who_upvoted': None,
+        'downvotes': 0,
+        'who_downvoted': None,
+        'comments': []
+    }
+
     assert result == expected
 
     # Checking the calls to the backend and fake_blob.
     backend.info_bucket.blob.assert_called_once_with('really_fake_page.txt')
     fake_blob.download_as_string.assert_called_once()
+
 
 def test_get_wiki_page_failure(backend, fake_blob):
 
@@ -110,15 +116,17 @@ def test_get_wiki_page_failure(backend, fake_blob):
         assert result == expected
 
         # Checking the calls to the backend and mock_loads.
-        backend.info_bucket.blob.assert_called_once_with('extremely_fake_page.txt')
+        backend.info_bucket.blob.assert_called_once_with(
+            'extremely_fake_page.txt')
         mock_loads.assert_called_once()
+
 
 def test_upload(backend, fake_blob):
     # Mocking the datetime.today() with freeze_time.
     with freeze_time('1111-11-11'):
         # Mocking the upload_from_string method.
         fake_blob.upload_from_string.return_value = None
-        
+
         # Mocking a file object.
         file_contents = b'fake page content'
         file = io.BytesIO(file_contents)
@@ -128,11 +136,12 @@ def test_upload(backend, fake_blob):
         backend.upload(file, 'uploaded_fake_page.txt')
 
         # Checking the calls to the backend and fake_blob
-        backend.info_bucket.blob.assert_called_once_with('uploaded_fake_page.txt')
+        backend.info_bucket.blob.assert_called_once_with(
+            'uploaded_fake_page.txt')
         fake_blob.upload_from_string.assert_called_once_with(
             '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}',
-            content_type='application/json'
-        )
+            content_type='application/json')
+
 
 def test_get_image(backend, fake_blob):
 

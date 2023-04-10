@@ -76,7 +76,7 @@ class Backend:
         ''' Gets an uploaded page from the content bucket
             name : name of the page files 
            '''
-        
+
         # Find the wiki-page's file in the GCS bucket.
         blob = self.info_bucket.blob(name)
 
@@ -114,22 +114,23 @@ class Backend:
         date = datetime.today().strftime('%Y-%m-%d')
 
         # Set up the dictionary containing all the wiki-page's metadata.
-        metadata = {'wiki_page' : filename,
-        'content' : file.read().decode('utf-8'),
-        'date_created' : date,
-        'upvotes' : 0,
-        'who_upvoted' : None,
-        'downvotes' : 0,
-        'who_downvoted' : None,
-        'comments' : []
+        metadata = {
+            'wiki_page': filename,
+            'content': file.read().decode('utf-8'),
+            'date_created': date,
+            'upvotes': 0,
+            'who_upvoted': None,
+            'downvotes': 0,
+            'who_downvoted': None,
+            'comments': []
         }
 
         # Convert it to a JSON file.
         metadata_json = json.dumps(metadata)
 
         # Save it to the GCS bucket.
-        blob.upload_from_string(metadata_json, content_type = 'application/json')
-    
+        blob.upload_from_string(metadata_json, content_type='application/json')
+
     def sign_up(self, username, password):
         ''' Adds data to the content bucket 
          user.get_id : username 
