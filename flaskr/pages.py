@@ -139,10 +139,10 @@ def make_endpoints(app,backend):
                 if len(resulted_pages) > 0:
                     return render_template('pages.html',places = resulted_pages)
                 else:
-                    message = f'No such pages found for {search_query}'
+                    message = f"No such pages found for '{search_query}' " 
                     return render_template('pages.html',message = message )
             elif search_by == 'content':
-                resulted_pages = backend.search_by_title(search_query)
+                resulted_pages = backend.search_by_content(search_query)
                 if len(resulted_pages) > 0:
                     return render_template('pages.html',places = resulted_pages)
                 else:

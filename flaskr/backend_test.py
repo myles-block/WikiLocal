@@ -206,6 +206,10 @@ def mock_title_content():
 def test_search_by_title_query_in_title(backend, mock_title_content):
 
     '''  testing search by title with query which is in page title
+         
+        Args : 
+            backend : mocked backend class
+            mock_title_content : mocked title_content method 
 
     '''
     result = backend.search_by_title('page')
@@ -220,6 +224,10 @@ def test_search_by_title_no_query_in_title(backend, mock_title_content):
 
     '''  testing search by title with query which is not  in page title
 
+         Args : 
+            backend : mocked backend class
+            mock_title_content : mocked title_content method 
+
     '''
     result = backend.search_by_title('gamma')
     expected = []
@@ -228,9 +236,13 @@ def test_search_by_title_no_query_in_title(backend, mock_title_content):
     
     mock_title_content.assert_called_once()
 
-def test_search_by_content_query_in_title(backend, mock_title_content):
+def test_search_by_content_query_in_content(backend, mock_title_content):
 
     '''  testing search by content with query which is in content of the page 
+
+        Args : 
+            backend : mocked backend class
+            mock_title_content : mocked title_content method 
 
     '''
     result = backend.search_by_content('page')
@@ -241,9 +253,13 @@ def test_search_by_content_query_in_title(backend, mock_title_content):
     mock_title_content.assert_called_once()
 
 
-def test_search_by_content_query_in_title(backend, mock_title_content):
+def test_search_by_content_query_not_in_content(backend, mock_title_content):
 
     '''  testing search by title with query which is not in content of the page
+
+         Args : 
+            backend : mocked backend class
+            mock_title_content : mocked title_content method 
 
     '''
     result = backend.search_by_content('gamma')

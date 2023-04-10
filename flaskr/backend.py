@@ -159,6 +159,8 @@ class Backend:
         ''' return dictionary with the title name and content 
         example : {'wiki_page1': 'content'}
         
+            Args : Self
+        
         '''
         title_content = {}
         all_pages_names = self.get_all_page_names()
@@ -169,7 +171,7 @@ class Backend:
         return title_content 
 
                 
-    def search_by_title(self,query):
+    def search_by_title(self, query):
 
         """  Returns list of pages(string) if query matched with pages 
         if query doesnot found in pages titles return empty list
@@ -186,7 +188,7 @@ class Backend:
                 final_results.append(page_title)
         return final_results
 
-    def search_by_content(self,query):
+    def search_by_content(self, query):
         """  Returns list of pages(string) if query found in content
         if query doesnot found in page-countent  returns empty list
 

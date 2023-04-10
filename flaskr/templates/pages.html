@@ -1,23 +1,32 @@
 {% extends "main.html" %}
 {% block title %} My Pages {% endblock %}
 {% block content %}
+<head>
+    <link rel="stylesheet" href="../static/pages.css" />
+</head>
+<body>
     <h1> Places To Visit</h1>
     <h3> Search </h3>
     <form action='/search' method='post'>
-        <input class="searchbar" type="text" name= "search_query" title="Search">
-        <button type= 'submit' name = 'search_by' value='title'>BY TITLE</button>
-        <button type = 'submit' name = 'search_by' value='content'>BY CONTENT</button>
+    <div class="small fw-light">
+        <div class="input-group">
+            <input class="form-control border rounded-pill" type="text" name='search_query' title='Search' placeholder="search by title or content"  id="example-search-input">
+            <button type="submit" class="btn btn-secondary" name="search_by" value = 'title'>BY TITLE</button>
+            <button type="submit" class="btn btn-secondary" name = "search_by" value='content'>BY CONTENT</button>
+        </div>
+    </div>
     </form>
-  
-    <ul>
-        {% if places %}
-            {% for place in places %}
-                <li><a href={{ url_for('page', page_name = place)}}>{{ place }}</a></li>
-            {% endfor %}
-        {% else %}
-        <p>{{ message}}</p>
-        {% endif %}
-    </ul>
-
+    <div class="pages">
+        <ul>
+            {% if places %}
+                {% for place in places %}
+                    <li><a href={{ url_for('page', page_name = place)}}>{{ place }}</a></li>
+                {% endfor %}
+            {% else %}
+            <p>{{ message}}</p>
+            {% endif %}
+        </ul>
+    </div>
+</body>
 
 {% endblock %}
