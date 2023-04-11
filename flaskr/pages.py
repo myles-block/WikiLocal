@@ -132,4 +132,27 @@ def make_endpoints(app):
         backend = Backend(user_bucket_name='wiki_login')
         account_metadata = backend.get_user_account(current_user.username)
         return render_template('account.html', account_settings=account_metadata)
+
+    @app.route('/update', methods=['GET', 'POST'])
+    def update():
+        #alter upload settings
+        if request.method == 'POST':
+            if request.form['bio']:
+                backend = Backend(user_bucket_name='wiki_login')
+                backend.update_bio(current_user.username, request.form['bio'])
+                message = 'Uploaded Successfully'
+                return render_template('update.html', bio_message=message)
+            pass
+        return render_template('update.html')
+
+    def allowed_photo(filename):
+        ''' 
+        filename : first name of the file -<abc.jpg-> abc
+        '''
+        allowed_extensions = { 'jpeg', 'jpg'}
+        extensions = filename.split('.')[1].lower()
+        if extensions in allowed_extensions:
+            return True
+        else:
+            return False
     

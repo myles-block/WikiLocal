@@ -259,3 +259,18 @@ class Backend:
         # Overwrite current account metadata        
         blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
         return user_metadata
+
+    def update_bio(self, username, bio):
+        ''' Changes and overwrites account json when a user updates their bio.
+            username : Current user that caused action.
+            bio : New Bio
+        '''
+        blob = self.user_bucket.blob(username)
+
+        # Get the current wiki_page's json file as a dictionary
+        user_metadata = Backend.get_user_account(self, username)
+
+        user_metadata['about_me'] = bio  
+
+        blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
+        return user_metadata
