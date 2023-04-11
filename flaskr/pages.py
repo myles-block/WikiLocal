@@ -30,7 +30,9 @@ def make_endpoints(app):
         if request.method == 'POST':
             if request.form['submit_button'] == 'Yes!':
 
-                new_page_content = backend.update_page('upvote', current_user.username, file_name)
+                new_page_content = backend.update_page('upvote',
+                                                       current_user.username,
+                                                       file_name)
 
                 return render_template('page.html',
                                        content=new_page_content,
@@ -38,12 +40,14 @@ def make_endpoints(app):
 
             elif request.form['submit_button'] == 'Nope':
 
-                new_page_content = backend.update_page('downvote', current_user.username, file_name)
+                new_page_content = backend.update_page('downvote',
+                                                       current_user.username,
+                                                       file_name)
 
                 return render_template('page.html',
                                        content=new_page_content,
                                        name=page_name)
-        
+
         return render_template('page.html',
                                content=page_content,
                                name=page_name)

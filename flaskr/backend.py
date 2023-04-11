@@ -320,10 +320,7 @@ class Backend:
                 page_metadata['who_downvoted'].append(username)
 
         # Once we have changed our wiki page's metadata, overwrite its json file with the updated version.
-        blob.upload_from_string(json.dumps(page_metadata), content_type='application/json')
-            
-        return page_metadata            
+        blob.upload_from_string(json.dumps(page_metadata),
+                                content_type='application/json')
 
-
-
-    
+        return page_metadata
