@@ -24,6 +24,7 @@ def make_endpoints(app):
         backend = Backend()
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
+        backend.update_wikihistory(current_user.username, page_name)
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
@@ -31,7 +32,6 @@ def make_endpoints(app):
     @app.route('/pages')
     def pages():
         backend = Backend(info_bucket_name='wiki_info')
-
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places=page_names)
 
