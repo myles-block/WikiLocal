@@ -27,6 +27,7 @@ def client(app):
         with app.app_context():
             yield client
 
+
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
 def test_home_page(client):
@@ -170,27 +171,37 @@ def test_wiki_page_upvote(client):
          Args : 
             client : Flask Client Object 
     '''
-    # Patch the backend method for update page.
-    with patch('flaskr.backend.Backend.update_page') as mock_update:
-        # Also patch the flask_login current_user module; replace with a fake user.
-        with patch('flaskr.pages.current_user', User('some_fake_user')):
-            # Mock the update_page method by making it return a dictionary representing wiki page metadata.
-            mock_update.return_value = {
-                "wiki_page": "really_fake_page",
-                "content": "really_fake_content",
-                "date_created": "0000-00-00",
-                "upvotes": 1,
-                "who_upvoted": ['some_fake_user'],
-                "downvotes": 0,
-                "who_downvoted": [],
-                "comments": []
-            }
 
-            resp = client.post('/pages/testingmetadata',
-                               data={'submit_button': 'Yes!'})
-            # Assert the request succeeds and the vote count is reflected.
-            assert resp.status_code == 200
-            assert b"1" in resp.data
+    # Patch the get_wiki_page method
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 1, "who_upvoted": ["some_fake_user"], "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
+
+        # Patch the backend method for update page.
+        with patch('flaskr.backend.Backend.update_page') as mock_update:
+
+            # Also patch the flask_login current_user module; replace with a fake user.
+            with patch('flaskr.pages.current_user', User('some_fake_user')):
+
+                # Mock the update_page method by making it return a dictionary representing wiki page metadata.
+                mock_update.return_value = {
+                    "wiki_page": "really_fake_page",
+                    "content": "really_fake_content",
+                    "date_created": "0000-00-00",
+                    "upvotes": 1,
+                    "who_upvoted": ['some_fake_user'],
+                    "downvotes": 0,
+                    "who_downvoted": [],
+                    "comments": []
+                }
+
+                resp = client.post('/pages/testingmetadata',
+                                   data={'submit_button': 'Yes!'})
+
+                # Assert the request succeeds and the vote count is reflected.
+                assert resp.status_code == 200
+                assert b"1" in resp.data
 
 
 def test_wiki_page_downvotes(client):
@@ -198,25 +209,35 @@ def test_wiki_page_downvotes(client):
          Args : 
             client : Flask Client Object 
     '''
-    # Patch the backend method for update page.
-    with patch('flaskr.backend.Backend.update_page') as mock_update:
-        # Also patch the flask_login current_user module; replace with a fake user.
-        with patch('flaskr.pages.current_user', User('some_fake_user')):
-            # Mock the update_page method by making it return a dictionary representing wiki page metadata.
-            mock_update.return_value = {
-                "wiki_page": "really_fake_page",
-                "content": "really_fake_content",
-                "date_created": "0000-00-00",
-                "upvotes": 0,
-                "who_upvoted": [],
-                "downvotes": 2,
-                "who_downvoted": ['some_fake_user', 'another_fake_user'],
-                "comments": []
-            }
 
-            resp = client.post('/pages/testingmetadata',
-                               data={'submit_button': 'Nope'})
+    # Patch the get_wiki_page method
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 2, "who_downvoted": ["some_fake_user", "another_fake_user"], "comments": []}'
+        )
 
-            # Assert the request succeeds and the vote count is reflected.
-            assert resp.status_code == 200
-            assert b"2" in resp.data
+        # Patch the backend method for update page.
+        with patch('flaskr.backend.Backend.update_page') as mock_update:
+
+            # Also patch the flask_login current_user module; replace with a fake user.
+
+            with patch('flaskr.pages.current_user', User('some_fake_user')):
+
+                # Mock the update_page method by making it return a dictionary representing wiki page metadata.
+                mock_update.return_value = {
+                    "wiki_page": "really_fake_page",
+                    "content": "really_fake_content",
+                    "date_created": "0000-00-00",
+                    "upvotes": 0,
+                    "who_upvoted": [],
+                    "downvotes": 2,
+                    "who_downvoted": ['some_fake_user', 'another_fake_user'],
+                    "comments": []
+                }
+
+                resp = client.post('/pages/testingmetadata',
+                                   data={'submit_button': 'Nope'})
+
+                # Assert the request succeeds and the vote count is reflected.
+                assert resp.status_code == 200
+                assert b"2" in resp.data
