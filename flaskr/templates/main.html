@@ -30,7 +30,7 @@
         <li><a href="/about">About</a></li>
         <li>|</li>
         {% if current_user.is_authenticated %}
-        <li><p>{{current_user.username}}</p></li>
+        <li><a href="/account">{{current_user.username}}</a></li>
         <li>|</li>
         <li><a href="/upload">Upload</a></li>        
         <li><a href="/logout">Logout</a></li>

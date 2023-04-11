@@ -126,3 +126,10 @@ def make_endpoints(app):
             return True
         else:
             return False
+
+    @app.route('/account', methods=['GET', 'POST'])
+    def account():
+        backend = Backend(user_bucket_name='wiki_login')
+        account_metadata = backend.get_user_account(current_user.username)
+        return render_template('account.html', account_settings=account_metadata)
+    
