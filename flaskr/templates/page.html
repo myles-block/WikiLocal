@@ -2,26 +2,4 @@
 {% block title %} {{name}} {% endblock %}
 {% block content %}
     {{content.content}}
-
-    {% if current_user.is_authenticated %}
-        <p>Did you find this page helpful?</p>
-        <form method="post" action="/pages/{{name}}">
-            {{content.upvotes}}
-            <input type="submit" name="submit_button" value="Yes!">
-            {{content.downvotes}}
-            <input type="submit" name="submit_button" value="Nope">
-        </form>
-    {% else %}
-        <h5>thumbs up placeholder</h5>{{content.upvotes}}
-        <h5>thumbs down placeholder</h5>{{content.downvotes}}
-    {% endif %}
-    
-    <h4>Comments</h4>
-    {% if content.comments %}
-        {% for comment in content.comments %}
-        <p>{{comment[0]}}:</p>
-        <p>{{comment[1]}}</p>
-        {% endfor %}
-    {% endif %}
-
 {% endblock %}

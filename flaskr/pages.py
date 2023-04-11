@@ -18,36 +18,13 @@ def make_endpoints(app):
 
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route('/pages/<page_name>', methods=['GET', 'POST'])
+    @app.route('/pages/<page_name>')
     def page(page_name):
         '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
         backend = Backend()
-
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
         backend.update_wikihistory(current_user.username, page_name)
-
-        if request.method == 'POST':
-            if request.form['submit_button'] == 'Yes!':
-
-                new_page_content = backend.update_page('upvote',
-                                                       current_user.username,
-                                                       file_name)
-
-                return render_template('page.html',
-                                       content=new_page_content,
-                                       name=page_name)
-
-            elif request.form['submit_button'] == 'Nope':
-
-                new_page_content = backend.update_page('downvote',
-                                                       current_user.username,
-                                                       file_name)
-
-                return render_template('page.html',
-                                       content=new_page_content,
-                                       name=page_name)
-
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
@@ -158,6 +135,12 @@ def make_endpoints(app):
             user_image = backend.get_image(account_metadata["pfp_filename"], "wiki_login")
             return render_template('account.html', account_settings=account_metadata, user_image=user_image)
         return render_template('account.html', account_settings=account_metadata)
+    
+    @app.route('/account/<user_name>')
+    def others_account(user_name):
+        backend = Backend(user_bucket_name='wiki_login')
+        account_metadata = backend.get_user_account(user_name)
+        return render_template('other_account.html', account_settings=account_metadata, username = user_name)
 
     @app.route('/update', methods=['GET', 'POST'])
     def update():
@@ -198,4 +181,3 @@ def make_endpoints(app):
             return True
         else:
             return False
-    

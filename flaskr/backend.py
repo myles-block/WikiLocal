@@ -90,30 +90,16 @@ class Backend:
         return name_data
 
     def get_all_page_names(self):
-        ''' Gets all the names and the rating of the pages uploaded to the wiki'''
-
-        # Set an empty list to store all the pages' information
+        ''' Gets all the names of the pages uploaded to the wiki'''
         page_names = []
 
         pages = self.storage_client.list_blobs(self.info_bucket)
 
         for page in pages:
-            # For each page, create a list to store its name, upvotes count, and downvotes count, respectively.
-            page_information = []
-
             extension = page.name.find('.')
 
-            # We only want to add information related to wiki page files, not any other type of file.
             if page.name[extension:] == '.txt':
-                page_metadata = Backend.get_wiki_page(self, page.name)
-
-                page_information.append(page.name[:extension])
-
-                page_information.append(page_metadata['upvotes'])
-
-                page_information.append(page_metadata['downvotes'])
-
-                page_names.append(page_information)
+                page_names.append(page.name[:extension])
 
         return page_names
 
@@ -134,9 +120,9 @@ class Backend:
             'content': file.read().decode('utf-8'),
             'date_created': date,
             'upvotes': 0,
-            'who_upvoted': [],
+            'who_upvoted': None,
             'downvotes': 0,
-            'who_downvoted': [],
+            'who_downvoted': None,
             'comments': []
         }
 
