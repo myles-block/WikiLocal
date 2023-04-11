@@ -120,9 +120,9 @@ class Backend:
             'content': file.read().decode('utf-8'),
             'date_created': date,
             'upvotes': 0,
-            'who_upvoted': None,
+            'who_upvoted': [],
             'downvotes': 0,
-            'who_downvoted': None,
+            'who_downvoted': [],
             'comments': []
         }
 
@@ -274,3 +274,56 @@ class Backend:
 
         blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
         return user_metadata
+        
+    def update_page(self, action_taken, username, page_name):
+        ''' Changes and overwrites a wiki-page's json file in terms of
+            its vote count.
+            action_taken : The user action that triggered this method.
+            username : The name of the user that took the action.
+            page_name : The name of the file that will be changed.  
+        '''
+        blob = self.info_bucket.blob(page_name)
+
+        # Get the current wiki_page's json file as a dictionary.
+        page_metadata = Backend.get_wiki_page(self, page_name)
+
+        # If the user just upvoted this page, update the page's vote count in the dictionary.
+        if action_taken == 'upvote':
+            # If the user has already upvoted for this page, then remove his vote from the page's vote count.
+            if username in page_metadata['who_upvoted']:
+                page_metadata['upvotes'] = page_metadata['upvotes'] - 1
+                page_metadata['who_upvoted'].remove(username)
+
+            # Every user can only have one vote at a time for any wiki page.
+            elif username in page_metadata['who_downvoted']:
+                page_metadata['downvotes'] = page_metadata['downvotes'] - 1
+                page_metadata['who_downvoted'].remove(username)
+
+            # If it's the user's first time voting for this page, then simply add its
+            # vote to the upvote count of the wiki page.
+            else:
+                page_metadata['upvotes'] = page_metadata['upvotes'] + 1
+                page_metadata['who_upvoted'].append(username)
+
+        # Do the same for when the user downvotes the  wiki page.
+        elif action_taken == 'downvote':
+            if username in page_metadata['who_downvoted']:
+                page_metadata['downvotes'] = page_metadata['downvotes'] - 1
+                page_metadata['who_downvoted'].remove(username)
+
+            elif username in page_metadata['who_upvoted']:
+                page_metadata['upvotes'] = page_metadata['upvotes'] - 1
+                page_metadata['who_upvoted'].remove(username)
+
+            else:
+                page_metadata['downvotes'] = page_metadata['downvotes'] + 1
+                page_metadata['who_downvoted'].append(username)
+
+        # Once we have changed our wiki page's metadata, overwrite its json file with the updated version.
+        blob.upload_from_string(json.dumps(page_metadata), content_type='application/json')
+            
+        return page_metadata            
+
+
+
+    
