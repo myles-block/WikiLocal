@@ -1,5 +1,5 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 from flaskr.backend import Backend, User
 from werkzeug.utils import secure_filename
 from google.cloud import storage
@@ -82,8 +82,6 @@ def make_endpoints(app):
                 #                        request.form['password'])
                 login_user(user)
                 return redirect('/')
-                # msg = "Successfully Completed!!! Now Sign In!!!"
-                # return render_template('signup.html', message = msg)
             else:
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message=msg)
@@ -113,6 +111,7 @@ def make_endpoints(app):
                 # filename = secure_filename(file.filename)
                 backend.upload(file,
                                request.form['wikiname'] + ".txt")  #workaround
+                backend.update_wikiupload(current_user.username, request.form['wikiname'])
                 message = 'Uploaded Successfully'
                 return render_template('upload.html', message=message)
         return render_template('upload.html')

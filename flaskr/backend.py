@@ -107,6 +107,7 @@ class Backend:
         ''' Adds data to the content bucket 
          file : path of the file 
          filename : name of the file user selected
+         username: username of current user
          '''
         blob = self.info_bucket.blob(filename)
 
@@ -200,3 +201,38 @@ class Backend:
                 return base64_image
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
+    
+    def get_user_account(self, username):
+        ''' Gets a user's account settings
+            username: Current user
+        '''
+
+        # Find the user's account settings
+        blob = self.user_bucket.blob(username)
+
+        # Get its dictionary using JSON API
+        account_data = json.loads((blob.download_as_string()), parse_constant=None)
+
+        # If doesn't exist, return none
+        if not account_data:
+            return None
+        
+        return account_data
+
+
+    def update_wikiupload(self, username, fileuploaded):
+        ''' Changes and overwrites account json when a user uploads a new wiki.
+            username : Current user that caused action.
+            fileuploaded : Filename that user uploaded
+        '''
+        blob = self.user_bucket.blob(username)
+        
+        # Get the current wiki_page's json file as a dictionary.
+        user_metadata = Backend.get_user_account(self, username)
+        user_metadata['wikis_uploaded'].append(fileuploaded)
+
+        # Overwrite current account metadata
+        blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
+        return user_metadata
+                
+
