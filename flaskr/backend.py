@@ -175,7 +175,7 @@ class Backend:
                 return base64_image
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
-    
+
     def update_page(self, action_taken, username, page_name):
         ''' Changes and overwrites a wiki-page's json file in terms of
             its vote count.
@@ -221,10 +221,7 @@ class Backend:
                 page_metadata['who_downvoted'].append(username)
 
         # Once we have changed our wiki page's metadata, overwrite its json file with the updated version.
-        blob.upload_from_string(json.dumps(page_metadata), content_type='application/json')
-            
-        return page_metadata            
+        blob.upload_from_string(json.dumps(page_metadata),
+                                content_type='application/json')
 
-
-
-    
+        return page_metadata
