@@ -79,7 +79,7 @@ def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
 def test_get_wiki_page(backend, fake_blob):
 
     # Mocking the download_as_string
-    fake_blob.download_as_string.return_value = '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}'
+    fake_blob.download_as_string.return_value = '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
 
     # Getting the dummy data
     result = backend.get_wiki_page('really_fake_page.txt')
@@ -89,9 +89,9 @@ def test_get_wiki_page(backend, fake_blob):
         'content': 'really_fake_content',
         'date_created': '0000-00-00',
         'upvotes': 0,
-        'who_upvoted': None,
+        'who_upvoted': [],
         'downvotes': 0,
-        'who_downvoted': None,
+        'who_downvoted': [],
         'comments': []
     }
 
@@ -139,7 +139,7 @@ def test_upload(backend, fake_blob):
         backend.info_bucket.blob.assert_called_once_with(
             'uploaded_fake_page.txt')
         fake_blob.upload_from_string.assert_called_once_with(
-            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}',
+            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
             content_type='application/json')
 
 
@@ -245,3 +245,4 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     backend.user_bucket.blob.assert_called_once_with(fake_username)
     mock_exists.assert_called_once()
     fake_blob.download_as_bytes.assert_called_once()
+

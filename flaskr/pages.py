@@ -1,5 +1,5 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 from flaskr.backend import Backend, User
 from werkzeug.utils import secure_filename
 from google.cloud import storage
@@ -18,12 +18,31 @@ def make_endpoints(app):
 
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route('/pages/<page_name>')
+    @app.route('/pages/<page_name>', methods=['GET', 'POST'])
     def page(page_name):
         '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
         backend = Backend()
+
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
+
+        if request.method == 'POST':
+            if request.form['submit_button'] == 'Yes!':
+
+                new_page_content = backend.update_page('upvote', current_user.username, file_name)
+
+                return render_template('page.html',
+                                       content=new_page_content,
+                                       name=page_name)
+
+            elif request.form['submit_button'] == 'Nope':
+
+                new_page_content = backend.update_page('downvote', current_user.username, file_name)
+
+                return render_template('page.html',
+                                       content=new_page_content,
+                                       name=page_name)
+        
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
