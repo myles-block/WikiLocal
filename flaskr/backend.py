@@ -112,7 +112,7 @@ class Backend:
                 page_information.append(page_metadata['upvotes'])
 
                 page_information.append(page_metadata['downvotes'])
-            
+
                 page_names.append(page_information)
 
         return page_names
