@@ -75,11 +75,11 @@ def make_endpoints(app):
         msg = ''
         backend = Backend()
         if request.method == 'POST':
-            completed = backend.sign_up(request.form['username'],
+            user = backend.sign_up(request.form['username'],
                                         request.form['password'])
-            if completed:
-                user = backend.sign_in(request.form['username'],
-                                       request.form['password'])
+            if user:
+                # user = backend.sign_in(request.form['username'],
+                #                        request.form['password'])
                 login_user(user)
                 return redirect('/')
                 # msg = "Successfully Completed!!! Now Sign In!!!"

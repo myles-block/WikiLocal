@@ -133,28 +133,45 @@ class Backend:
 
     def sign_up(self, username, password):
         ''' Adds data to the content bucket 
-         user.get_id : username 
-         user : user object
+         username : user created username 
+         password : user created password
          '''
+         # Hashes username and password with salt
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
-        # blob = self.user_bucket.blob(username)
+
+        # Checks if blob exist with username and raise error if it does
         blob = self.user_bucket.get_blob(username)
         if blob is not None:
             # raise ValueError((f"{username} already exists!"))
-            return False
+            return None
+
+        # Creates blob with username
         blob = self.user_bucket.blob(username)
-        with blob.open("w") as f:
-            f.write(hashed.hexdigest())
-        return True
-        # isExist = storage.Blob(bucket=self.user_bucket,
-        #                        name=username).exists(self.storage_client)
-        # if isExist:
-        #     return False
-        # else:
-        #     with blob.open("w") as f:
-        #         f.write(hashed.hexdigest())
-        #     return True
+
+        # Get today's date in YYYY-MM-DD format.
+        date = datetime.today().strftime('%Y-%m-%d')
+
+        # Set up the dictionary containing all the author's metadata.
+        metadata = {
+            'hashed_password': hashed.hexdigest(),
+            'account_creation': date,
+            'wikis_uploaded': [],
+            'wiki_history': [],
+            'pfp_filename': None,
+            'about_me': '',
+        }
+
+        # Convert it to a JSON file.
+        metadata_json = json.dumps(metadata)
+
+        # Save it to the GCS bucket.
+        blob.upload_from_string(metadata_json, content_type='application/json')
+        return User(username)
+
+        # with blob.open("w") as f:
+        #     f.write(hashed.hexdigest())
+
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''
