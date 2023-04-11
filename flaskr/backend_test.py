@@ -40,34 +40,21 @@ def backend(bucket, fake_client):
 
 def test_get_all_pages(backend, fake_client, fake_blob):
 
-    # Patching get_wiki_page method used to get each page's rating.
-    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
-        mock_get_wiki.return_value = {
-            "wiki_page": "Example Blob.txt",
-            "content": "fake blob content",
-            "date_created": "1111-11-11",
-            "upvotes": 0,
-            "who_upvoted": [],
-            "downvotes": 0,
-            "who_downvoted": [],
-            "comments": []
-        }
+    # Setting blob's name property
+    fake_blob.name = 'Example Blob.txt'
 
-        # Setting blob's name property
-        fake_blob.name = 'Example Blob.txt'
+    # Mocking listing all the blobs of a bucket.
+    fake_client.list_blobs.return_value = [fake_blob]
 
-        # Mocking listing all the blobs of a bucket.
-        fake_client.list_blobs.return_value = [fake_blob]
+    # Calling the actual function with the mock data.
+    result = backend.get_all_page_names()
+    expected = ['Example Blob']
 
-        # Calling the actual function with the mock data.
-        result = backend.get_all_page_names()
-        expected = [['Example Blob', 0, 0]]
+    # Are we getting what we want?
+    assert result == expected
 
-        # Are we getting what we want?
-        assert result == expected
-
-        # Check whether the backend and list_blobs were actually called.
-        backend.storage_client.list_blobs.assert_called_once()
+    # Check whether the backend and list_blobs were actually called.
+    backend.storage_client.list_blobs.assert_called_once()
 
 
 def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
@@ -92,7 +79,7 @@ def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
 def test_get_wiki_page(backend, fake_blob):
 
     # Mocking the download_as_string
-    fake_blob.download_as_string.return_value = '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
+    fake_blob.download_as_string.return_value = '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}'
 
     # Getting the dummy data
     result = backend.get_wiki_page('really_fake_page.txt')
@@ -102,9 +89,9 @@ def test_get_wiki_page(backend, fake_blob):
         'content': 'really_fake_content',
         'date_created': '0000-00-00',
         'upvotes': 0,
-        'who_upvoted': [],
+        'who_upvoted': None,
         'downvotes': 0,
-        'who_downvoted': [],
+        'who_downvoted': None,
         'comments': []
     }
 
@@ -152,7 +139,7 @@ def test_upload(backend, fake_blob):
         backend.info_bucket.blob.assert_called_once_with(
             'uploaded_fake_page.txt')
         fake_blob.upload_from_string.assert_called_once_with(
-            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
+            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}',
             content_type='application/json')
 
 
