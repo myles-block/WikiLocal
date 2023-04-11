@@ -247,6 +247,6 @@ class Backend:
         
 
 
-backend = Backend()
-# print(backend.get_all_page_names())
-print(backend.get_wiki_page('Apple Carniege Library.txt'))
+# backend = Backend()
+# # print(backend.get_all_page_names())
+# print(backend.get_wiki_page('Apple Carniege Library.txt'))
