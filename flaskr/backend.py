@@ -120,9 +120,9 @@ class Backend:
             'content': file.read().decode('utf-8'),
             'date_created': date,
             'upvotes': 0,
-            'who_upvoted': None,
+            'who_upvoted': [],
             'downvotes': 0,
-            'who_downvoted': None,
+            'who_downvoted': [],
             'comments': []
         }
 
