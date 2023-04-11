@@ -1,5 +1,5 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-from flask_login import login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, logout_user,current_user
 from flaskr.backend import Backend, User
 from werkzeug.utils import secure_filename
 from google.cloud import storage
@@ -150,5 +150,47 @@ def make_endpoints(app,backend):
                     return render_template('pages.html',message = message )
         else:
             return redirect('/pages.html',200)
+
+
+    @app.route('/comment/<page_name>' ,methods = ["GET","POST"])
+    def comment(page_name):
+        ''' 
+            Post the comment to the wiki page metadat with user_name and comment 
+
+        '''
+        print('page name is',page_name)
+        if not current_user.is_authenticated:
+            flash('Please login or signup to make a comment')
+            return redirect(url_for('page', page_name =page_name))
+        if request.method == "POST":
+            current_user_name = current_user.username
+            user_comment = request.form['user_comment']
+
+            backend.update_metadata_with_comment(page_name, current_user_name, user_comment)
+            return redirect(url_for('page', page_name =page_name))
+        else:
+            return redirect(url_for('page', page_name=page_name))
+
+        
+
+
+				
+
+
+
+
+
+
+
+		
+        
+        
+        
+                    
+
+        
+
+
+
 
 

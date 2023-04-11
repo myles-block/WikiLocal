@@ -73,6 +73,7 @@ class Backend:
         self.user_bucket = self.storage_client.bucket(user_bucket_name)
 
     def get_wiki_page(self, name):  # 1
+
         ''' Gets an uploaded page from the content bucket
             name : name of the page files 
            '''
@@ -130,7 +131,7 @@ class Backend:
 
         # Save it to the GCS bucket.
         blob.upload_from_string(metadata_json, content_type='application/json')
-        
+
 
     def sign_up(self, username, password):
 
@@ -244,9 +245,38 @@ class Backend:
                 final_results.append(page_title)
         return final_results 
 
+    def updating_metadata_with_comments(self, page_name , current_user , user_comment):
+
+        ''' Update the wiki_page metadata with comments and user name if user makes a comment and upload to gcs 
+
+            Args : 
+                page_name : name of the wiki_page which is used to get metadata
+                current_user : logged in user who makes the comment 
+                comments : users comment 
+        '''
+        wiki_page_name = page_name + '.txt'
+        page_metadata = self.get_wiki_page(wiki_page_name) #returns the page metadata in dict 
+
+        if page_metadata:
+            page_metadata['comments'].append({current_user : user_comment}) #updating the username and comments 
+            updated_metadata_json = json.dumps(page_metadata)
+            blob = self.info_bucket.blob(wiki_page_name)
+            blob.upload_from_string(updated_metadata_json, content_type='application/json')
+
+
+        
+                    
+
+        
         
 
 
-backend = Backend()
-# print(backend.get_all_page_names())
-print(backend.get_wiki_page('Apple Carniege Library.txt'))
+
+
+
+        
+
+
+# backend = Backend()
+# print(backend.updating_metadata_with_comments('Apple Carniege Library','Manish','This place is Really Nice'))
+# print(backend.get_wiki_page('Apple Carniege Library.txt'))

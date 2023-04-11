@@ -325,4 +325,48 @@ def test_search_by_content_query_not_in_content(backend, mock_title_content):
     mock_title_content.assert_called_once()
 
 
+def test_updating_metadata_with_comments(backend,fake_blob):
+
+    ''' testing updating metadata with comments method 
+
+        Args : 
+            backend : mocked_backend_class
+            fake_blob : mocked blob object 
+    '''
+    fake_page_metadata = {"wiki_page": "fake_page.txt",
+                           "content": "fake page content", 
+                           "date_created": "1999-10-12", 
+                           "upvotes": 0, 
+                           "who_upvoted": None, 
+                           "downvotes": 0, 
+                           "who_downvoted": None, 
+                           "comments": []}
+    backend.get_wiki_page = MagicMock(return_value=fake_page_metadata)
+    # print(backend.get_wiki_page())
+
+    fake_page = 'fake_page'
+    fake_user = 'fake_user'
+    fake_comment = 'fake_user looks good'
+
+    result = backend.updating_metadata_with_comments(fake_page, fake_user , fake_comment)
+
+    expected = {"wiki_page": "fake_page.txt",
+                "content": "fake page content", 
+                "date_created": "1999-10-12", 
+                "upvotes": 0, 
+                "who_upvoted": None, 
+                "downvotes": 0, 
+                "who_downvoted": None, 
+                "comments": [{"fake_user":"fake_user looks good"}]}
+
+    assert result == None 
+    
+    backend.get_wiki_page.assert_called_once_with("fake_page.txt")
+    backend.info_bucket.blob.assert_called_once_with("fake_page.txt")
+    fake_blob.upload_from_string.assert_called_once_with(json.dumps(expected), content_type='application/json')
+
+    
+
+
+
 
