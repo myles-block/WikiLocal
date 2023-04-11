@@ -18,7 +18,7 @@
     
     <h4>Comments</h4>
     {% if content.comments %}
-        {% for comment in comments %}
+        {% for comment in content.comments %}
         <p>{{comment[0]}}:</p>
         <p>{{comment[1]}}</p>
         {% endfor %}
