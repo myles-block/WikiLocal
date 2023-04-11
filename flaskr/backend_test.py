@@ -48,7 +48,7 @@ def test_get_all_pages(backend, fake_client, fake_blob):
 
     # Calling the actual function with the mock data.
     result = backend.get_all_page_names()
-    expected = ['Example Blob']
+    expected = [['Example Blob', 0, 0]]
 
     # Are we getting what we want?
     assert result == expected
