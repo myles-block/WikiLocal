@@ -137,7 +137,7 @@ class Backend:
          username : user created username 
          password : user created password
          '''
-         # Hashes username and password with salt
+        # Hashes username and password with salt
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
 
@@ -177,7 +177,8 @@ class Backend:
             blob = self.user_bucket.blob(username)
 
             # Get its content as a dictionary using the JSON API and returns none if doesn't exist
-            account_data = json.loads((blob.download_as_string()), parse_constant=None)
+            account_data = json.loads((blob.download_as_string()),
+                                      parse_constant=None)
             if not account_data:
                 return None
 
@@ -205,7 +206,7 @@ class Backend:
                 return base64_image
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
-    
+
     def get_user_account(self, username):
         ''' Gets a user's account settings
             username: Current user
@@ -215,14 +216,14 @@ class Backend:
         blob = self.user_bucket.blob(username)
 
         # Get its dictionary using JSON API
-        account_data = json.loads((blob.download_as_string()), parse_constant=None)
+        account_data = json.loads((blob.download_as_string()),
+                                  parse_constant=None)
 
         # If doesn't exist, return none
         if not account_data:
             return None
-        
-        return account_data
 
+        return account_data
 
     def update_wikiupload(self, username, fileuploaded):
         ''' Changes and overwrites account json when a user uploads a new wiki.
@@ -230,13 +231,14 @@ class Backend:
             fileuploaded : Filename that user uploaded
         '''
         blob = self.user_bucket.blob(username)
-        
+
         # Get the current wiki_page's json file as a dictionary.
         user_metadata = Backend.get_user_account(self, username)
         user_metadata['wikis_uploaded'].append(fileuploaded)
 
         # Overwrite current account metadata
-        blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
+        blob.upload_from_string(json.dumps(user_metadata),
+                                content_type='application/json')
         return user_metadata
 
     def update_wikihistory(self, username, file_viewed):
@@ -258,10 +260,11 @@ class Backend:
             wiki_history_array.pop(0)
 
         # Adds new viewed wiki to history
-        user_metadata['wiki_history'].append(file_viewed)        
+        user_metadata['wiki_history'].append(file_viewed)
 
-        # Overwrite current account metadata        
-        blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
+        # Overwrite current account metadata
+        blob.upload_from_string(json.dumps(user_metadata),
+                                content_type='application/json')
         return user_metadata
 
     def update_bio(self, username, bio):

@@ -76,7 +76,7 @@ def make_endpoints(app):
         backend = Backend()
         if request.method == 'POST':
             user = backend.sign_up(request.form['username'],
-                                        request.form['password'])
+                                   request.form['password'])
             if user:
                 # user = backend.sign_in(request.form['username'],
                 #                        request.form['password'])
@@ -111,7 +111,8 @@ def make_endpoints(app):
                 # filename = secure_filename(file.filename)
                 backend.upload(file,
                                request.form['wikiname'] + ".txt")  #workaround
-                backend.update_wikiupload(current_user.username, request.form['wikiname'])
+                backend.update_wikiupload(current_user.username,
+                                          request.form['wikiname'])
                 message = 'Uploaded Successfully'
                 return render_template('upload.html', message=message)
         return render_template('upload.html')
@@ -140,7 +141,9 @@ def make_endpoints(app):
     def others_account(user_name):
         backend = Backend(user_bucket_name='wiki_login')
         account_metadata = backend.get_user_account(user_name)
-        return render_template('other_account.html', account_settings=account_metadata, username = user_name)
+        return render_template('other_account.html',
+                               account_settings=account_metadata,
+                               username=user_name)
 
     @app.route('/update', methods=['GET', 'POST'])
     def update():
@@ -175,7 +178,7 @@ def make_endpoints(app):
         ''' 
         filename : first name of the file -<abc.jpg-> abc
         '''
-        allowed_extensions = { 'jpeg', 'jpg'}
+        allowed_extensions = {'jpeg', 'jpg'}
         extensions = filename.split('.')[1].lower()
         if extensions in allowed_extensions:
             return True

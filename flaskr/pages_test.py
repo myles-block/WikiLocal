@@ -1,7 +1,7 @@
 from flaskr import create_app
 from flaskr.backend import User
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
-
+from unittest.mock import patch
 import pytest
 
 
@@ -161,3 +161,29 @@ def fixit_test_incorrect_signup(client, test_repeatuser):
                            })
     # We should not go to the home page, resulting in a 200 code.
     assert response.status_code == 200
+
+
+def test_other_account(client):
+    ''' Testing the account parameterised route for a user profile.
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    # Patch the get_user_account method.
+    with patch('flaskr.backend.Backend.get_user_account') as mock_get_user:
+
+        mock_get_user.return_value = {
+            'hashed_password': "whatever_pasword",
+            'account_creation': "anydate",
+            'wikis_uploaded': [],
+            'wiki_history': [],
+            'pfp_filename': None,
+            'about_me': 'some funny info about me',
+        }
+
+        resp = client.get('/account/fake_user')
+
+        # Assert the request succeeds and the user info and username are reflected.
+        assert resp.status_code == 200
+        assert b"fake_user" in resp.data
+        assert b"some funny info about me" in resp.data
