@@ -55,23 +55,61 @@ def test_about_page(client):
 
 
 def test_pages_page(client):
+    '''  Test function to test '/pages' route 
+
+        Arg : Client 
+    '''
+
+    # Patch the get_all_page_names method from the backend so we don't call GCS
     with patch('flaskr.backend.Backend.get_all_page_names') as mock_page:
-        mock_page.return_value = ['Page 1', 'Page 2']
+        mock_page.return_value = [['Page 1', 12, 0], ['Page 2', 1, 6]]
+
         resp = client.get('/pages')
+
+        # Check that the request succeeds and both the page name and ratings are displayed.
         assert resp.status_code == 200
         assert b"Page 1" in resp.data
         assert b"Page 2" in resp.data
+        assert b"6" in resp.data
+        assert b"12" in resp.data
 
 
 def test_wiki_page(client):
+    '''  Test function to test the parameterised '/pages/<page_name>' route 
+
+        Arg : Client 
+    '''
+
+    # Patch the get_wiki_page method so we don't call GCS
     with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
         mock_page.return_value = json.loads(
-            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}'
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
         )
 
         resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
+
         assert resp.status_code == 200
         assert b"really_fake_content" in resp.data
+
+
+def test_wiki_page_with_comments(client):
+    '''  Test function to test the parameterised '/pages/<page_name>' route 
+         when it has comments.
+        Arg : Client 
+    '''
+
+    # Patch the get_wiki_page method so we don't call GCS
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": [["fake_commenter","This is a fake comment"]]}'
+        )
+
+        resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
+
+        # Check the request succeeds and the both the comment's author and content are displayed.
+        assert resp.status_code == 200
+        assert b"fake_commenter" in resp.data
+        assert b"This is a fake comment" in resp.data
 
 
 def test_login(client):
@@ -205,7 +243,7 @@ def test_wiki_page_upvote(client):
 
 
 def test_wiki_page_downvotes(client):
-    ''' Testing the pages parameterized route for a wiki page with two downvotes
+    ''' Testing the pages parameterised route for a wiki page with two downvotes
          Args : 
             client : Flask Client Object 
     '''

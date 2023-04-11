@@ -12,9 +12,16 @@
             <input type="submit" name="submit_button" value="Nope">
         </form>
     {% else %}
-        {{content.upvotes}}
-        {{content.downvotes}}
+        <h5>thumbs up placeholder</h5>{{content.upvotes}}
+        <h5>thumbs down placeholder</h5>{{content.downvotes}}
     {% endif %}
-
+    
+    <h4>Comments</h4>
+    {% if content.comments %}
+        {% for comment in content.comments %}
+        <p>{{comment[0]}}:</p>
+        <p>{{comment[1]}}</p>
+        {% endfor %}
+    {% endif %}
 
 {% endblock %}

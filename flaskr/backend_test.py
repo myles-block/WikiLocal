@@ -40,21 +40,34 @@ def backend(bucket, fake_client):
 
 def test_get_all_pages(backend, fake_client, fake_blob):
 
-    # Setting blob's name property
-    fake_blob.name = 'Example Blob.txt'
+    # Patching get_wiki_page method used to get each page's rating.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+        mock_get_wiki.return_value = {
+            "wiki_page": "Example Blob.txt",
+            "content": "fake blob content",
+            "date_created": "1111-11-11",
+            "upvotes": 0,
+            "who_upvoted": [],
+            "downvotes": 0,
+            "who_downvoted": [],
+            "comments": []
+        }
 
-    # Mocking listing all the blobs of a bucket.
-    fake_client.list_blobs.return_value = [fake_blob]
+        # Setting blob's name property
+        fake_blob.name = 'Example Blob.txt'
 
-    # Calling the actual function with the mock data.
-    result = backend.get_all_page_names()
-    expected = ['Example Blob']
+        # Mocking listing all the blobs of a bucket.
+        fake_client.list_blobs.return_value = [fake_blob]
 
-    # Are we getting what we want?
-    assert result == expected
+        # Calling the actual function with the mock data.
+        result = backend.get_all_page_names()
+        expected = [['Example Blob', 0, 0]]
 
-    # Check whether the backend and list_blobs were actually called.
-    backend.storage_client.list_blobs.assert_called_once()
+        # Are we getting what we want?
+        assert result == expected
+
+        # Check whether the backend and list_blobs were actually called.
+        backend.storage_client.list_blobs.assert_called_once()
 
 
 def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
