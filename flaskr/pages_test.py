@@ -27,44 +27,6 @@ def client(app):
         with app.app_context():
             yield client
 
-
-@pytest.fixture
-def test_user():
-    username = 'testing'
-    password = 'testing'
-    user = User(username)
-    # Upload a test user to the bucket.
-    user.save(password)
-    yield user
-    blob = user.bucket.blob(username)
-    # After we have finished testing, just delete it.
-    blob.delete()
-
-
-@pytest.fixture
-def test_newuser():
-    username = 'new_user'
-    password = 'new_user'
-    user = User(username)
-    # Upload a test user to the bucket.
-    user.save(password)
-    yield user
-    blob = user.bucket.blob(username)
-    # After we have finished testing, just delete it.
-    blob.delete()
-
-
-@pytest.fixture
-def test_repeatuser():
-    username = 'new_user_same'
-    password = 'new_user'
-    user = User(username)
-    # Upload a test user to the bucket.
-    user.save(password)
-    yield user
-    # blob = user.bucket.blob(username)
-
-
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
 def test_home_page(client):
@@ -111,7 +73,7 @@ def test_wiki_page(client):
         assert b"really_fake_content" in resp.data
 
 
-def test_login(client, test_user):
+def test_login(client):
     # Send a response to the route trying to verify for the test user.
     with patch('flaskr.backend.Backend.sign_in') as mock_login:
         mock_login.return_value = User('fake_username')
@@ -127,7 +89,7 @@ def test_login(client, test_user):
         assert current_user.username == 'fake_username'
 
 
-def test_login_incorrect_password(client, test_user):
+def test_login_incorrect_password(client):
     # If we pass the wrong information, we will not be redirected.
     with patch('flaskr.backend.Backend.sign_in') as mock_login:
         mock_login.return_value = None
@@ -142,7 +104,7 @@ def test_login_incorrect_password(client, test_user):
     assert b'Invalid username or password' in response.data
 
 
-def test_logout(client, test_user):
+def test_logout(client):
 
     # login_user(User('fake_username'))
     response = client.get('/logout')
@@ -151,7 +113,7 @@ def test_logout(client, test_user):
     assert current_user.is_authenticated == False
 
 
-def test_signup(client, test_user):
+def test_signup(client):
     # Send a response to the route trying to verify for the test user.
     with patch('flaskr.backend.Backend.sign_up') as mock_signup:
         with patch('flaskr.backend.Backend.sign_in') as mock_signin:
@@ -169,7 +131,7 @@ def test_signup(client, test_user):
             assert current_user.username == 'new_user'
 
 
-def test_incorrect_signup(client, test_repeatuser):
+def test_incorrect_signup(client):
     # Send a response to the route trying to hit the same user.
 
     with patch('flaskr.backend.Backend.sign_up') as mock_signup:
