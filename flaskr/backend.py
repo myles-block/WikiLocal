@@ -169,22 +169,22 @@ class Backend:
         blob.upload_from_string(metadata_json, content_type='application/json')
         return User(username)
 
-        # with blob.open("w") as f:
-        #     f.write(hashed.hexdigest())
-
-
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''
         if storage.Blob(bucket=self.user_bucket,
                         name=username).exists(self.storage_client):
-            user = self.user_bucket.blob(username)
+            blob = self.user_bucket.blob(username)
+
+            # Get its content as a dictionary using the JSON API and returns none if doesn't exist
+            account_data = json.loads((blob.download_as_string()), parse_constant=None)
+            if not account_data:
+                return None
 
             salted = f"{username}{'gamma'}{password}"
             hashed_password = hashlib.md5(salted.encode()).hexdigest()
 
-            pw = user.download_as_bytes()
-
-            if hashed_password == pw.decode('utf-8'):
+            # Takes password from GCS JSON
+            if hashed_password == account_data['hashed_password']:
                 return User(username)
         return None
 
