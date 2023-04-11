@@ -138,15 +138,23 @@ class Backend:
          '''
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
-        blob = self.user_bucket.blob(username)
-        isExist = storage.Blob(bucket=self.user_bucket,
-                               name=username).exists(self.storage_client)
-        if isExist:
+        # blob = self.user_bucket.blob(username)
+        blob = self.user_bucket.get_blob(username)
+        if blob is not None:
+            # raise ValueError((f"{username} already exists!"))
             return False
-        else:
-            with blob.open("w") as f:
-                f.write(hashed.hexdigest())
-            return True
+        blob = self.user_bucket.blob(username)
+        with blob.open("w") as f:
+            f.write(hashed.hexdigest())
+        return True
+        # isExist = storage.Blob(bucket=self.user_bucket,
+        #                        name=username).exists(self.storage_client)
+        # if isExist:
+        #     return False
+        # else:
+        #     with blob.open("w") as f:
+        #         f.write(hashed.hexdigest())
+        #     return True
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''
