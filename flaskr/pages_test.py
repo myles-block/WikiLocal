@@ -266,6 +266,73 @@ def test_search_for_content_with_no_result(client):
         assert response.status_code == 200
         assert b'No such pages found with ' in response.data
 
+def test_page_commenting(client):
+    '''  Testing the post comment in page route 
+
+        Args : 
+          client : Flask Client Object 
+    '''
+
+        # Patch the backend method for update page.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
+
+        # Patch the backend method for update page.
+        with patch('flaskr.backend.Backend.updating_metadata_with_comments') as mock_update_comment:
+
+            # Also patch the flask_login current_user module; replace with a fake user.
+            with patch('flaskr.pages.current_user', User('fake_user')):
+
+                #sample how it looks like after calling 
+                fake_metadata = {
+                    "wiki_page": "fake_page",
+                    "content": "fake_content",
+                    "date_created": "0000-00-00",
+                    "upvotes": 0,
+                    "who_upvoted": None,
+                    "downvotes": 0,
+                    "who_downvoted": [],
+                    "comments": [{'fake_userr': 'fake_comment'}]
+
+                }
+
+                response = client.post('/pages/fake_page',
+                                   data={'post_button': 'post' , 'user_comment' : 'fake_comment'})
+
+                assert response.status_code == 302
+
+                mock_update_comment.assert_called_once_with("fake_page", "fake_user", "fake_comment")
+                
+
+def test_page_commenting_without_user(client):
+    ''' Testing the post comment when user is not logged in 
+
+        Args : 
+            Client : Flask Client Object 
+    '''
+
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
+
+        # Make a POST request to the endpoint without an authenticated user.
+        resp = client.post('/pages/fake_page', data={'post_button': 'post'}) # no user 
+
+        assert resp.status_code == 200
+        assert b'Please login or signup to make a comment' in resp.data
+
+
+
+
+
+        
+
+
+
+
 
 
 

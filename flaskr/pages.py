@@ -30,7 +30,7 @@ def make_endpoints(app,backend):
                     user_comment = request.form.get('user_comment')
                     wiki_page_name = page_name
                     backend.updating_metadata_with_comments(wiki_page_name, current_username ,user_comment)
-                    return redirect(url_for('page', page_name = page_name))                    
+                    return redirect(url_for('page', page_name = page_name),)                    
                 else:
                     flash('Please login or signup to make a comment')
         return render_template('page.html',
