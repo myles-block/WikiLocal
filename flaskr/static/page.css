@@ -16,3 +16,15 @@ margin-top: 30px;
     padding-top: 20px;
 
 }
+
+.commentarea {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+  
+.comment-box {
+    margin-top: auto;
+  }
+

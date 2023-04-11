@@ -6,21 +6,26 @@
 </head>
 <h3> {{ name }}</h3>
     <p class="content">{{content.content}}</p>
+    
+    <div class="commentarea">
 
-     <h4> Comments </h4>
-     <form action='/comment/<page_name>' method='post'>
-        <div class="form-outline w-100">
-            <textarea class="form-control" id="text_box" name="user_comment" rows="4"
-                style="background: #fff;" required></textarea>
-        </div>
-        </div>
-        <div class="float-end mt-2 pt-1">
-            {% if message %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% endif %}
-            <button type="submit" name='post_button' value ='post' class="btn btn-primary btn-sm">Post Comment</button>
-            <button type="reset" class="btn btn-outline-primary btn-sm">Cancel</button>
-        </div>
-    </from>
+        <h4> Comments </h4>
+        <form action='/pages/{{ name }}' method='POST'>
+            <div class="form-outline w-100">
+                <textarea class="form-control" id="text_box" name="user_comment" rows="4"
+                    style="background: #fff;" required></textarea>
+            </div>
+            </div>
+            <div class="float-end mt-2 pt-1">     
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="alert alert-danger">{{ messages[0] }}</div>
+                        {% endif %}
+                    {% endwith %}
+                <button type="submit" name='post_button' value ='post' class="btn btn-primary btn-sm">Post Comment</button>
+                <button type="reset" class="btn btn-outline-primary btn-sm">Cancel</button>
+            </div>
+    </div>
+    </form>
 
 {% endblock %}

@@ -253,7 +253,7 @@ def test_search_for_content_with_results(client):
         assert b'title_4' in response.data
         
 def test_search_for_content_with_no_result(client):
-    '''  Testing the search rout for search_by_content post with some results
+    '''  Testing the search route for search_by_content post with some results
 
         Args : 
             client : Flask Client Object 
@@ -265,6 +265,10 @@ def test_search_for_content_with_no_result(client):
       
         assert response.status_code == 200
         assert b'No such pages found with ' in response.data
+
+
+
+
 
 
 
