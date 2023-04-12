@@ -189,12 +189,16 @@ class Backend:
                 return User(username)
         return None
 
-    def get_image(self, image_name):  # 2
+    def get_image(self, image_name, bucket_name):  # 2
         ''' Gets an image from the content bucket.
-            image_name : name of the image to be get from bucket  '''
+            image_name : name of the image to be get from bucket
+            bucket_name : denotes which bucket to use  '''
 
         try:
-            blob = self.info_bucket.blob(image_name)
+            if bucket_name == "wiki_info":
+                blob = self.info_bucket.blob(image_name)
+            else:
+                blob = self.user_bucket.blob(image_name)
             image_data = blob.download_as_bytes()
             if image_data:
                 base64_image = base64.b64encode(image_data).decode('utf-8')
@@ -281,11 +285,21 @@ class Backend:
         '''
         user_blob = self.user_bucket.blob(username)
 
-        # Uploads photo to GCS
+        # Creates Photoname
         photo_name = username +".jpg"
+        
+        # Checks if a photo already exists and deletes old photo
+        isExist = storage.Blob(bucket=self.user_bucket, name=photo_name).exists(self.storage_client)
+        if isExist:
+            existBlob = self.user_bucket.blob(photo_name)
+            generation_match_precondition = None
+            existBlob.reload()
+            existBlob.delete(if_generation_match=generation_match_precondition)
+
+        # Uploads photo to GCS
         photo_blob = self.user_bucket.blob(photo_name)
         generation_match_precondition = 0
-        photo_blob.upload_from_filename(file.filename, if_generation_match=generation_match_precondition)
+        photo_blob.upload_from_file(file, if_generation_match=generation_match_precondition)
         # Get the current wiki_page's json file as a dictionary
         user_metadata = Backend.get_user_account(self, username)
 

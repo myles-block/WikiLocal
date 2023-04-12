@@ -39,9 +39,9 @@ def make_endpoints(app):
     def about():
         backend = Backend(info_bucket_name='wiki_info')
         author_images = {
-            'Manish': backend.get_image('manish.jpeg'),
-            'Gabriel': backend.get_image('gabrielPic.jpg'),
-            'Myles': backend.get_image('mylesPic.jpg')
+            'Manish': backend.get_image('manish.jpeg', 'wiki_info'),
+            'Gabriel': backend.get_image('gabrielPic.jpg', 'wiki_info'),
+            'Myles': backend.get_image('mylesPic.jpg', 'wiki_info')
         }
         return render_template('about.html', author_images=author_images)
 
@@ -132,7 +132,7 @@ def make_endpoints(app):
         backend = Backend(user_bucket_name='wiki_login')
         account_metadata = backend.get_user_account(current_user.username)
         if account_metadata["pfp_filename"]:
-            user_image = backend.get_image(account_metadata)
+            user_image = backend.get_image(account_metadata["pfp_filename"], "wiki_login")
             return render_template('account.html', account_settings=account_metadata, user_image=user_image)
         return render_template('account.html', account_settings=account_metadata)
 
@@ -162,7 +162,7 @@ def make_endpoints(app):
                 backend = Backend(user_bucket_name='wiki_login')                    
                 backend.update_pfp(current_user.username, file)
                 message = 'Uploaded Successfully'
-                return render_template('upload.html', message=message)
+                return render_template('update.html', message=message)
         return render_template('update.html')
 
     def allowed_photo(filename):
