@@ -34,6 +34,6 @@ def create_app(test_config=None):
 
     # TODO(Project 1): Make additional modifications here for logging in, backends
     # and additional endpoints.
-    backend= Backend()
-    pages.make_endpoints(app,backend)
+    backend = Backend()
+    pages.make_endpoints(app, backend)
     return app

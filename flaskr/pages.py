@@ -1,10 +1,11 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-from flask_login import LoginManager, login_user, login_required, logout_user,current_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from google.cloud import storage
-from flaskr.backend import Backend , User
+from flaskr.backend import Backend, User
 
-def make_endpoints(app,backend):
+
+def make_endpoints(app, backend):
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -17,7 +18,7 @@ def make_endpoints(app,backend):
 
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route('/pages/<page_name>', methods = ['GET' , 'POST'])
+    @app.route('/pages/<page_name>', methods=['GET', 'POST'])
     def page(page_name):
         '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
 
@@ -25,12 +26,13 @@ def make_endpoints(app,backend):
         page_content = backend.get_wiki_page(file_name)
         if request.method == 'POST':
             if request.form.get('post_button') == 'post':
-                if current_user.is_authenticated :
-                    current_username = current_user.username 
+                if current_user.is_authenticated:
+                    current_username = current_user.username
                     user_comment = request.form.get('user_comment')
                     wiki_page_name = page_name
-                    backend.updating_metadata_with_comments(wiki_page_name, current_username ,user_comment)
-                    return redirect(url_for('page', page_name = page_name),)                    
+                    backend.updating_metadata_with_comments(
+                        wiki_page_name, current_username, user_comment)
+                    return redirect(url_for('page', page_name=page_name),)
                 else:
                     flash('Please login or signup to make a comment')
         return render_template('page.html',
@@ -40,13 +42,12 @@ def make_endpoints(app,backend):
     @app.route('/pages')
     def pages():
 
-
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places=page_names)
 
     @app.route('/about')
     def about():
-   
+
         author_images = {
             'Manish': backend.get_image('manish.jpeg'),
             'Gabriel': backend.get_image('gabrielPic.jpg'),
@@ -64,7 +65,6 @@ def make_endpoints(app,backend):
         This route attempts to log a user with a POST request. 
         Otherwise, it just renders a login form where users can try to log in with their credentials
         '''
-
 
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
@@ -135,8 +135,8 @@ def make_endpoints(app,backend):
             return True
         else:
             return False
-    
-    @app.route('/search',methods = ["GET","POST"])
+
+    @app.route('/search', methods=["GET", "POST"])
     def search():
         '''  post the resulted pages from the user query in pages.html
 
@@ -147,16 +147,16 @@ def make_endpoints(app,backend):
             if search_by == 'title':
                 resulted_pages = backend.search_by_title(search_query)
                 if len(resulted_pages) > 0:
-                    return render_template('pages.html',places = resulted_pages)
+                    return render_template('pages.html', places=resulted_pages)
                 else:
-                    message = f"No such pages found for '{search_query}' " 
-                    return render_template('pages.html',message = message )
+                    message = f"No such pages found for '{search_query}' "
+                    return render_template('pages.html', message=message)
             elif search_by == 'content':
                 resulted_pages = backend.search_by_content(search_query)
                 if len(resulted_pages) > 0:
-                    return render_template('pages.html',places = resulted_pages)
+                    return render_template('pages.html', places=resulted_pages)
                 else:
                     message = f"No such pages found with '{search_query}' in the content "
-                    return render_template('pages.html',message = message )
+                    return render_template('pages.html', message=message)
         else:
-            return redirect('/pages.html',200)
+            return redirect('/pages.html', 200)

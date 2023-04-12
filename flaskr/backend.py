@@ -73,7 +73,6 @@ class Backend:
         self.user_bucket = self.storage_client.bucket(user_bucket_name)
 
     def get_wiki_page(self, name):  # 1
-
         ''' Gets an uploaded page from the content bucket
             name : name of the page files 
            '''
@@ -132,9 +131,7 @@ class Backend:
         # Save it to the GCS bucket.
         blob.upload_from_string(metadata_json, content_type='application/json')
 
-
     def sign_up(self, username, password):
-
         ''' Adds data to the content bucket 
          user.get_id : username 
          user : user object
@@ -183,10 +180,9 @@ class Backend:
                 return base64_image
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
-    
-     #helper function
-    def title_content(self):
 
+    #helper function
+    def title_content(self):
         ''' return dictionary with the title name and content if exists
             else return {}
 
@@ -199,21 +195,19 @@ class Backend:
         for page in all_pages_names:
             if page not in title_content:
                 try:
-                    page_metadata = self.get_wiki_page(page+'.txt') 
+                    page_metadata = self.get_wiki_page(page + '.txt')
                     #checking page_metadata
                     # print('page metadata',page_metadata)
                     if page_metadata:
                         content = page_metadata.get('content')
-                        title_content[page]=content
+                        title_content[page] = content
                 except Exception as e:
-                    pass # due to .txt json files missing in buckets
+                    pass  # due to .txt json files missing in buckets
                 # title_content[page]=content
-        
-        return title_content 
 
-                
+        return title_content
+
     def search_by_title(self, query):
-
         """  Returns list of pages(string) if query matched with pages 
         if query doesnot found in pages titles return empty list
 
@@ -240,13 +234,13 @@ class Backend:
         """
         final_results = []
         pages_contents = self.title_content()
-        for page_title , page_content in pages_contents.items():
+        for page_title, page_content in pages_contents.items():
             if query.lower() in page_content.lower():
                 final_results.append(page_title)
-        return final_results 
+        return final_results
 
-    def updating_metadata_with_comments(self, page_name , current_user , user_comment):
-
+    def updating_metadata_with_comments(self, page_name, current_user,
+                                        user_comment):
         ''' Update the wiki_page metadata with comments and user name if user makes a comment and upload to gcs 
 
             Args : 
@@ -255,28 +249,13 @@ class Backend:
                 comments : users comment 
         '''
         wiki_page_name = page_name + '.txt'
-        page_metadata = self.get_wiki_page(wiki_page_name) #returns the page metadata in dict 
+        page_metadata = self.get_wiki_page(
+            wiki_page_name)  #returns the page metadata in dict
 
         if page_metadata:
-            page_metadata['comments'].append({current_user : user_comment}) #updating the username and comments 
+            page_metadata['comments'].append({current_user:
+                user_comment})  #updating the username and comments
             updated_metadata_json = json.dumps(page_metadata)
             blob = self.info_bucket.blob(wiki_page_name)
-            blob.upload_from_string(updated_metadata_json, content_type='application/json')
-
-
-        
-                    
-
-        
-        
-
-
-
-
-
-        
-
-
-# backend = Backend()
-# print(backend.updating_metadata_with_comments('Apple Carniege Library','Manish','This place is Really Nice'))
-# print(backend.get_wiki_page('Apple Carniege Library.txt'))
+            blob.upload_from_string(updated_metadata_json,
+                                    content_type='application/json')
