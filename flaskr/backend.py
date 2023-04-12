@@ -281,7 +281,27 @@ class Backend:
             return resulted_pages
         elif user_option == 'year':
             resulted_pages = sorted(page_date_created, key=lambda x: page_date_created[x],reverse= True) # by latest date 
-            return resulted_pages 
+            return resulted_pages
+
+    def filter_by_year(self, input_date):
+        ''' Returns wiki pages with the proper content,
+            Ex: [{"wiki_content1: "content"}]
+            
+            Args:
+                date : date chosen by user
+        '''
+        page_date_created = self.title_date()
+        final_results = []
+        for wiki in page_date_created:
+            date = page_date_created[wiki]
+            print(date[0:3])
+            if date[0:4] == input_date:
+                print(date)
+                final_results.append(wiki)
+        print(len(final_results))
+        return final_results
+        
+        
 
             
 

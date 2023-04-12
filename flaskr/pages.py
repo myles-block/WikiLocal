@@ -148,6 +148,13 @@ def make_endpoints(app,backend):
                 else:
                     message = f"No such pages found with '{search_query}' in the content "
                     return render_template('pages.html',message = message )
+            elif search_by == 'year':
+                resulted_pages = backend.filter_by_year(search_query)
+                if len(resulted_pages) > 0:
+                    return render_template('pages.html',places = resulted_pages)
+                else:
+                    message = f"No such pages found with '{search_query}' as year "
+                    return render_template('pages.html',message = message )                 
         else:
             return redirect('/pages.html',200)
     
@@ -168,6 +175,6 @@ def make_endpoints(app,backend):
 
 
 
+
+
     
-
-
