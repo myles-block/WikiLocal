@@ -3,6 +3,7 @@ from flaskr.backend import User
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from unittest.mock import patch
 import pytest
+import base64
 
 
 # See https://flask.palletsprojects.com/en/2.2.x/testing/
@@ -187,3 +188,35 @@ def test_other_account(client):
         assert resp.status_code == 200
         assert b"fake_user" in resp.data
         assert b"some funny info about me" in resp.data
+
+
+def test_other_account_with_pfp(client):
+
+    # Patch the get_user_account method.
+    with patch('flaskr.backend.Backend.get_user_account') as mock_get_user:
+
+        with patch('flaskr.backend.Backend.get_image') as mock_get_image:
+
+            expected = base64.b64encode(b'Fake_Image_Data').decode('utf-8')
+
+            mock_get_image.return_value = expected
+
+            mock_get_user.return_value = {
+                'hashed_password': "whatever_pasword",
+                'account_creation': "anydate",
+                'wikis_uploaded': [],
+                'wiki_history': [],
+                'pfp_filename': "some_fake_image.jpg",
+                'about_me': 'some funny info about me',
+            }
+
+            expected_html = f"<img src='data:image/jpeg;base64,{expected}' alt='Account Image'>"
+
+            resp = client.get('/account/fake_user')
+
+            # Assert the request succeeds and the user info, username and picture are reflected.
+            assert resp.status_code == 200
+            assert b"fake_user" in resp.data
+            assert b"some funny info about me" in resp.data
+            assert expected_html.encode() in resp.data
+            assert b"no pfp attached" not in resp.data
