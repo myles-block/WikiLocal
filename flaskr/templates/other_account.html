@@ -4,7 +4,7 @@
     <h1>{{username}}</h1>
     <h4>Profile Photo </h4>
     {% if account_settings.pfp_filename %}
-        {{account_settings.pfp_filename}}
+        <img src='data:image/jpeg;base64,{{ user_image }}' alt='Account Image'>
     {% else %}
     <p>
         <small><i>"<u>no pfp attached</u>"</i></small>

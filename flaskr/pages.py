@@ -141,6 +141,11 @@ def make_endpoints(app):
     def others_account(user_name):
         backend = Backend(user_bucket_name='wiki_login')
         account_metadata = backend.get_user_account(user_name)
+
+        if account_metadata["pfp_filename"]:
+            user_image = backend.get_image(account_metadata["pfp_filename"], "wiki_login")
+            return render_template('account.html', account_settings=account_metadata, user_image=user_image)
+            
         return render_template('other_account.html',
                                account_settings=account_metadata,
                                username=user_name)
