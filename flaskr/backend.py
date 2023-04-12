@@ -200,13 +200,11 @@ class Backend:
                 try:
                     page_metadata = self.get_wiki_page(page+'.txt') 
                     #checking page_metadata
-                    # print('page metadata',page_metadata)
                     if page_metadata:
                         content = page_metadata.get('content')
                         title_content[page]=content
                 except Exception as e:
-                    pass # due to .txt json files missing in buckets
-                # title_content[page]=content
+                    pass 
         
         return title_content 
 
@@ -244,9 +242,62 @@ class Backend:
                 final_results.append(page_title)
         return final_results 
 
+    
+    def title_date(self):
+        ''' Returns dictionary with title name and date created 
+            Example : [{'wikipage' : '2022-01-03'}]
+
+            Args:
+                None 
+        '''
+        pages_dates_created = {}
+        all_page_names = self.get_all_page_names()
+        for page in all_page_names:
+            if page not in pages_dates_created:
+                page_metadata = self.get_wiki_page(page+'.txt')
+                pages_dates_created[page] = page_metadata['date_created'] 
+        return pages_dates_created 
+
+
+
+    def sort_pages(self,user_option):
+
+        ''' Returns list of pages by sorting them according to user_option 
+
+            Args : 
+                user_option : option choosen by user 
+                possible options : Option 1 -> A TO Z 
+                                   Option 2 -> Z TO A 
+                                   Option 3 -> Latest To Previous 
+        '''
+        page_date_created = self.title_date() # dict 
+        all_page_names = list(page_date_created.keys())
+
+        if user_option == 'a_z':
+            resulted_pages = sorted(all_page_names)# sorted function sorts the list in ascending order -> A to Z  
+            return resulted_pages   
+        elif user_option == 'z_a':
+            resulted_pages = sorted(all_page_names ,key=str.lower,reverse=True) # descending order 
+            return resulted_pages
+        elif user_option == 'year':
+            resulted_pages = sorted(page_date_created, key=lambda x: page_date_created[x],reverse= True) # by latest date 
+            return resulted_pages 
+
+            
+
+
+            
+            
+
+
+
+
+
+
+
         
 
 
 # backend = Backend()
-# # print(backend.get_all_page_names())
+# print(backend.sort_pages('z_a'))
 # print(backend.get_wiki_page('Apple Carniege Library.txt'))

@@ -150,5 +150,24 @@ def make_endpoints(app,backend):
                     return render_template('pages.html',message = message )
         else:
             return redirect('/pages.html',200)
+    
+    @app.route('/sort', methods =["GET" ,"POST"])
+    def sort():
+        ''' post the resulted pages from user option of sorting 
+            if resulted pages exist otherise redirect pages 
+
+        '''
+        if request.method == "POST":
+            user_option = request.form.get("sort_option")
+            required_pages = backend.sort_pages(user_option)
+    
+            return render_template('pages.html' , places = required_pages , sort_order=user_option)
+
+        return redirect('/pages.html')
+
+
+
+
+    
 
 
