@@ -130,10 +130,8 @@ class Backend:
 
         # Save it to the GCS bucket.
         blob.upload_from_string(metadata_json, content_type='application/json')
-        
 
     def sign_up(self, username, password):
-
         ''' Adds data to the content bucket 
          user.get_id : username 
          user : user object
@@ -182,10 +180,9 @@ class Backend:
                 return base64_image
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
-    
-     #helper function
-    def title_content(self):
 
+    #helper function
+    def title_content(self):
         ''' return dictionary with the title name and content if exists
             else return {}
 
@@ -198,19 +195,17 @@ class Backend:
         for page in all_pages_names:
             if page not in title_content:
                 try:
-                    page_metadata = self.get_wiki_page(page+'.txt') 
+                    page_metadata = self.get_wiki_page(page + '.txt')
                     #checking page_metadata
                     if page_metadata:
                         content = page_metadata.get('content')
-                        title_content[page]=content
+                        title_content[page] = content
                 except Exception as e:
-                    pass 
-        
-        return title_content 
+                    pass
 
-                
+        return title_content
+
     def search_by_title(self, query):
-
         """  Returns list of pages(string) if query matched with pages 
         if query doesnot found in pages titles return empty list
 
@@ -237,12 +232,11 @@ class Backend:
         """
         final_results = []
         pages_contents = self.title_content()
-        for page_title , page_content in pages_contents.items():
+        for page_title, page_content in pages_contents.items():
             if query.lower() in page_content.lower():
                 final_results.append(page_title)
-        return final_results 
+        return final_results
 
-    
     def title_date(self):
         ''' Returns dictionary with title name and date created 
             Example : [{'wikipage' : '2022-01-03'}]
@@ -254,14 +248,11 @@ class Backend:
         all_page_names = self.get_all_page_names()
         for page in all_page_names:
             if page not in pages_dates_created:
-                page_metadata = self.get_wiki_page(page+'.txt')
-                pages_dates_created[page] = page_metadata['date_created'] 
-        return pages_dates_created 
+                page_metadata = self.get_wiki_page(page + '.txt')
+                pages_dates_created[page] = page_metadata['date_created']
+        return pages_dates_created
 
-
-
-    def sort_pages(self,user_option):
-
+    def sort_pages(self, user_option):
         ''' Returns list of pages by sorting them according to user_option 
 
             Args : 
@@ -270,32 +261,23 @@ class Backend:
                                    Option 2 -> Z TO A 
                                    Option 3 -> Latest To Previous 
         '''
-        page_date_created = self.title_date() # dict 
+        page_date_created = self.title_date()  # dict
         all_page_names = list(page_date_created.keys())
 
         if user_option == 'a_z':
-            resulted_pages = sorted(all_page_names)# sorted function sorts the list in ascending order -> A to Z  
-            return resulted_pages   
+            resulted_pages = sorted(
+                all_page_names
+            )  # sorted function sorts the list in ascending order -> A to Z
+            return resulted_pages
         elif user_option == 'z_a':
-            resulted_pages = sorted(all_page_names ,key=str.lower,reverse=True) # descending order 
+            resulted_pages = sorted(all_page_names, key=str.lower,
+                                    reverse=True)  # descending order
             return resulted_pages
         elif user_option == 'year':
-            resulted_pages = sorted(page_date_created, key=lambda x: page_date_created[x],reverse= True) # by latest date 
-            return resulted_pages 
-
-            
-
-
-            
-            
-
-
-
-
-
-
-
-        
+            resulted_pages = sorted(page_date_created,
+                                    key=lambda x: page_date_created[x],
+                                    reverse=True)  # by latest date
+            return resulted_pages
 
 
 # backend = Backend()

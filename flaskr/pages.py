@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from google.cloud import storage
 
 
-def make_endpoints(app,backend):
+def make_endpoints(app, backend):
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -36,7 +36,7 @@ def make_endpoints(app,backend):
 
     @app.route('/about')
     def about():
-   
+
         author_images = {
             'Manish': backend.get_image('manish.jpeg'),
             'Gabriel': backend.get_image('gabrielPic.jpg'),
@@ -54,7 +54,6 @@ def make_endpoints(app,backend):
         This route attempts to log a user with a POST request. 
         Otherwise, it just renders a login form where users can try to log in with their credentials
         '''
-
 
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
@@ -125,8 +124,8 @@ def make_endpoints(app,backend):
             return True
         else:
             return False
-    
-    @app.route('/search',methods = ["GET","POST"])
+
+    @app.route('/search', methods=["GET", "POST"])
     def search():
         '''  post the resulted pages from the user query in pages.html
 
@@ -137,21 +136,21 @@ def make_endpoints(app,backend):
             if search_by == 'title':
                 resulted_pages = backend.search_by_title(search_query)
                 if len(resulted_pages) > 0:
-                    return render_template('pages.html',places = resulted_pages)
+                    return render_template('pages.html', places=resulted_pages)
                 else:
-                    message = f"No such pages found for '{search_query}' " 
-                    return render_template('pages.html',message = message )
+                    message = f"No such pages found for '{search_query}' "
+                    return render_template('pages.html', message=message)
             elif search_by == 'content':
                 resulted_pages = backend.search_by_content(search_query)
                 if len(resulted_pages) > 0:
-                    return render_template('pages.html',places = resulted_pages)
+                    return render_template('pages.html', places=resulted_pages)
                 else:
                     message = f"No such pages found with '{search_query}' in the content "
-                    return render_template('pages.html',message = message )
+                    return render_template('pages.html', message=message)
         else:
-            return redirect('/pages.html',200)
-    
-    @app.route('/sort', methods =["GET" ,"POST"])
+            return redirect('/pages.html', 200)
+
+    @app.route('/sort', methods=["GET", "POST"])
     def sort():
         ''' post the resulted pages from user option of sorting 
             if resulted pages exist otherise redirect pages 
@@ -160,14 +159,9 @@ def make_endpoints(app,backend):
         if request.method == "POST":
             user_option = request.form.get("sort_option")
             required_pages = backend.sort_pages(user_option)
-    
-            return render_template('pages.html' , places = required_pages , sort_order=user_option)
+
+            return render_template('pages.html',
+                                   places=required_pages,
+                                   sort_order=user_option)
 
         return redirect('/pages.html')
-
-
-
-
-    
-
-

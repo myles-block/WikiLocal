@@ -247,19 +247,18 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     fake_blob.download_as_bytes.assert_called_once()
 
 
-
-
-@pytest.fixture 
+@pytest.fixture
 def mock_title_content():
     '''  mocking title content method of the backend to inject in search by title and search by content test cases 
     '''
 
-    with patch('flaskr.backend.Backend.title_content',return_value = {'Page1' : 'Page 1 content'},autospec=True) as mock_title_content:
+    with patch('flaskr.backend.Backend.title_content',
+               return_value={'Page1': 'Page 1 content'},
+               autospec=True) as mock_title_content:
         yield mock_title_content
 
 
 def test_search_by_title_query_in_title(backend, mock_title_content):
-
     '''  testing search by title with query which is in page title
          
         Args : 
@@ -271,12 +270,11 @@ def test_search_by_title_query_in_title(backend, mock_title_content):
     expected = ['Page1']
 
     assert result == expected
-    
+
     mock_title_content.assert_called_once()
 
 
 def test_search_by_title_no_query_in_title(backend, mock_title_content):
-
     '''  testing search by title with query which is not  in page title
 
          Args : 
@@ -288,11 +286,11 @@ def test_search_by_title_no_query_in_title(backend, mock_title_content):
     expected = []
 
     assert result == expected
-    
+
     mock_title_content.assert_called_once()
 
-def test_search_by_content_query_in_content(backend, mock_title_content):
 
+def test_search_by_content_query_in_content(backend, mock_title_content):
     '''  testing search by content with query which is in content of the page 
 
         Args : 
@@ -304,12 +302,11 @@ def test_search_by_content_query_in_content(backend, mock_title_content):
     expected = ['Page1']
 
     assert result == expected
-    
+
     mock_title_content.assert_called_once()
 
 
 def test_search_by_content_query_not_in_content(backend, mock_title_content):
-
     '''  testing search by title with query which is not in content of the page
 
          Args : 
@@ -321,13 +318,11 @@ def test_search_by_content_query_not_in_content(backend, mock_title_content):
     expected = []
 
     assert result == expected
-    
+
     mock_title_content.assert_called_once()
 
 
-
-
-@pytest.fixture 
+@pytest.fixture
 def mock_title_date():
     '''  mocking title date method of the backend to inject in sort pages method
 
@@ -335,8 +330,13 @@ def mock_title_date():
             None
     '''
 
-    with patch('flaskr.backend.Backend.title_date',return_value = {'Page1' : '2022-02-01','Title':'2021-01-01'},autospec=True) as mock_title_date:
-        yield mock_title_date 
+    with patch('flaskr.backend.Backend.title_date',
+               return_value={
+                   'Page1': '2022-02-01',
+                   'Title': '2021-01-01'
+               },
+               autospec=True) as mock_title_date:
+        yield mock_title_date
 
 
 @pytest.mark.parametrize('option,expected', [
@@ -345,7 +345,6 @@ def mock_title_date():
     ('year', ['Page1', 'Title']),
 ])
 def test_sort_pages(backend, option, expected, mock_title_date):
-
     ''' Testing sort pages method 
 
         Args: 
@@ -357,10 +356,5 @@ def test_sort_pages(backend, option, expected, mock_title_date):
 
     result = backend.sort_pages(option)
     assert result == expected
-    mock_title_date.assert_called_once() # making sure called once for each option 
-
-
-
-
-
-
+    mock_title_date.assert_called_once(
+    )  # making sure called once for each option
