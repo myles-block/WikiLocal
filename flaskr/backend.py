@@ -271,6 +271,25 @@ class Backend:
         user_metadata = Backend.get_user_account(self, username)
 
         user_metadata['about_me'] = bio  
-
         blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
+        return user_metadata
+
+    def update_pfp(self, username, file):
+        ''' Changes and overwrites account json when a user updates their photo.
+            username : Current user that caused action.
+            file : Profile Photo file
+        '''
+        user_blob = self.user_bucket.blob(username)
+
+        # Uploads photo to GCS
+        photo_name = username +".jpg"
+        photo_blob = self.user_bucket.blob(photo_name)
+        generation_match_precondition = 0
+        photo_blob.upload_from_filename(file.filename, if_generation_match=generation_match_precondition)
+        # Get the current wiki_page's json file as a dictionary
+        user_metadata = Backend.get_user_account(self, username)
+
+        # Add photo to GCS
+        user_metadata['pfp_filename'] = photo_name 
+        user_blob.upload_from_string(json.dumps(user_metadata), content_type='application/json')
         return user_metadata

@@ -131,6 +131,9 @@ def make_endpoints(app):
     def account():
         backend = Backend(user_bucket_name='wiki_login')
         account_metadata = backend.get_user_account(current_user.username)
+        if account_metadata["pfp_filename"]:
+            user_image = backend.get_image(account_metadata)
+            return render_template('account.html', account_settings=account_metadata, user_image=user_image)
         return render_template('account.html', account_settings=account_metadata)
 
     @app.route('/update', methods=['GET', 'POST'])
@@ -142,7 +145,24 @@ def make_endpoints(app):
                 backend.update_bio(current_user.username, request.form['bio'])
                 message = 'Uploaded Successfully'
                 return render_template('update.html', bio_message=message)
-            pass
+            # Handles adding an image
+        return render_template('update.html')
+    
+    @app.route('/updatePFP', methods=['GET', 'POST'])
+    def updatePFP():
+        if request.method == 'POST':
+            if 'file' not in request.files:
+                message = 'No file part'
+                return render_template('update.html', message=message)
+            file = request.files['file']
+            if file.filename == ' ':
+                message = 'Please Select Files'
+                return render_template('upload.html', message=message)
+            if file.filename and allowed_photo(file.filename):
+                backend = Backend(user_bucket_name='wiki_login')                    
+                backend.update_pfp(current_user.username, file)
+                message = 'Uploaded Successfully'
+                return render_template('upload.html', message=message)
         return render_template('update.html')
 
     def allowed_photo(filename):

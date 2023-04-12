@@ -6,6 +6,7 @@
     <p>Hi {{current_user.username}}!</p>
     <h4>Profile Photo </h4>
     {% if account_settings.pfp_filename %}
+        <img src='data:image/jpeg;base64,{{ user_image }}' alt='Account Image'>
         {{account_settings.pfp_filename}}
     {% else %}
     <p>
