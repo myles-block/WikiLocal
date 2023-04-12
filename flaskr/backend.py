@@ -294,11 +294,8 @@ class Backend:
         final_results = []
         for wiki in page_date_created:
             date = page_date_created[wiki]
-            print(date[0:3])
             if date[0:4] == input_date:
-                print(date)
                 final_results.append(wiki)
-        print(len(final_results))
         return final_results
         
         
