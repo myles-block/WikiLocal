@@ -160,30 +160,3 @@ def make_endpoints(app,backend):
                     return render_template('pages.html',message = message )
         else:
             return redirect('/pages.html',200)
-
-
-   
-
-        
-
-
-				
-
-
-
-
-
-
-
-		
-        
-        
-        
-                    
-
-        
-
-
-
-
-

@@ -364,9 +364,3 @@ def test_updating_metadata_with_comments(backend,fake_blob):
     backend.get_wiki_page.assert_called_once_with("fake_page.txt")
     backend.info_bucket.blob.assert_called_once_with("fake_page.txt")
     fake_blob.upload_from_string.assert_called_once_with(json.dumps(expected), content_type='application/json')
-
-    
-
-
-
-
