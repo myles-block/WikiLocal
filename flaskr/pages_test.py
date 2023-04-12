@@ -237,6 +237,7 @@ def test_search_for_title_with_no_result(client):
 
     
 def test_search_for_content_with_results(client):
+
     '''  Testing the search rout for search_by_content post with some results
 
         Args : 
@@ -253,6 +254,7 @@ def test_search_for_content_with_results(client):
         assert b'title_4' in response.data
         
 def test_search_for_content_with_no_result(client):
+
     '''  Testing the search rout for search_by_content post with some results
 
         Args : 
@@ -267,8 +269,63 @@ def test_search_for_content_with_no_result(client):
         assert b'No such pages found with ' in response.data
 
 
+def test_sort_route_for_option1(client):
+
+    ''' Testing the sort route  for desired sorted results for option1 : a_z
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {'Page1': '2022-03-01' , 'Title':'2021-03-01'}
+
+        with patch('flaskr.backend.Backend.sort_pages') as mock_search:
+
+            mock_search.return_value = ['Page1','Title']
+            response=client.post('/sort',data = {'sort_option' : 'a_z'})
+
+            assert response.status_code == 200
+            assert b'Page1' in response.data
+            assert b'Title' in response.data
 
 
+def test_sort_route_for_option2(client):
+
+    ''' Testing the sort route  for desired sorted results for option2 : z_a
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {'Page1': '2022-03-01' , 'Title':'2021-03-01'}
+        
+        with patch('flaskr.backend.Backend.sort_pages') as mock_search:
+
+            mock_search.return_value = ['Title','Page1']
+            response=client.post('/sort',data = {'sort_option' : 'z_a'})
+
+            assert response.status_code == 200
+            assert b'Title' in response.data
+            assert b'Page1' in response.data
+
+def test_sort_route_for_option3(client):
+
+    ''' Testing the sort route  for desired sorted results for option3 : year -> latest to previous
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {'Page1': '2022-03-01' , 'Title':'2021-03-01'}
+        
+        with patch('flaskr.backend.Backend.sort_pages') as mock_search:
+
+            mock_search.return_value = ['Page1','Title']
+            response=client.post('/sort',data = {'sort_option' : 'year'})
+
+            assert response.status_code == 200
+            assert b'Page1' in response.data
+            assert b'Title' in response.data
 
 
 

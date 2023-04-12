@@ -326,3 +326,41 @@ def test_search_by_content_query_not_in_content(backend, mock_title_content):
 
 
 
+
+@pytest.fixture 
+def mock_title_date():
+    '''  mocking title date method of the backend to inject in sort pages method
+
+        Args:
+            None
+    '''
+
+    with patch('flaskr.backend.Backend.title_date',return_value = {'Page1' : '2022-02-01','Title':'2021-01-01'},autospec=True) as mock_title_date:
+        yield mock_title_date 
+
+
+@pytest.mark.parametrize('option,expected', [
+    ('a_z', ['Page1', 'Title']),
+    ('z_a', ['Title', 'Page1']),
+    ('year', ['Page1', 'Title']),
+])
+def test_sort_pages(backend, option, expected, mock_title_date):
+
+    ''' Testing sort pages method 
+
+        Args: 
+            backend : mocked backend class
+            option : possible option user can choose define in parametrize 
+            expected : expected value for that option 
+            mock_title_date: mocked title_date method 
+    '''
+
+    result = backend.sort_pages(option)
+    assert result == expected
+    mock_title_date.assert_called_once() # making sure called once for each option 
+
+
+
+
+
+
