@@ -173,6 +173,29 @@ def test_get_image_failure(backend, fake_blob):
         'fake_not_existing_image.jpeg')
     fake_blob.download_as_bytes.assert_called_once()
 
+def test_successful_sign_up(backend, fake_blob):
+    # Goal: check if we are getting a successful sign up or not
+    # Goal: check if we are getting the correct account creation
+
+    # creates fake user credentials
+    fake_username = 'fake username'
+    fake_password = 'fake password'
+    fake_salted = f"{fake_username}{'gamma'}{fake_password}"
+    fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
+
+    # mocks self.user_bucket.get_blob
+    # checking username blob exits in the bucket or not
+    with patch('google.cloud.storage.Client.bucket.get_blob') as mock_exists:
+        mock_exists.return_value = None
+
+        # calling the backend sign_up
+        result = backend.sign_up(fake_username, fake_password)
+
+        # checking if the result is a User class and if the user_name matches
+        assert isinstance(result, User)
+        assert result.username == fake_username
+        # assert blob contents is correct
+
 
 def test_sign_in_user_exist(backend, fake_blob):
     # creating the fake username and password , salted , hashed passsword
