@@ -183,10 +183,14 @@ def test_successful_sign_up(backend, fake_blob):
     fake_salted = f"{fake_username}{'gamma'}{fake_password}"
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
-    # mocks self.user_bucket.get_blob
+    
     # checking username blob exits in the bucket or not
-    with patch('google.cloud.storage.Client.bucket.get_blob') as mock_exists:
-        mock_exists.return_value = None
+    # mocks self.user_bucket.get_blob
+    # fake_blob.get_blob(fake_username).return_value = None
+
+    # mocks getting the bucket
+    with patch('google.cloud.storage.Client.bucket') as mock_bucket:
+        mock_bucket.get_blob(fake_username).return_value = None
 
         # calling the backend sign_up
         result = backend.sign_up(fake_username, fake_password)

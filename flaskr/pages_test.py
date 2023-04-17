@@ -160,4 +160,4 @@ def fixit_test_incorrect_signup(client, test_repeatuser):
                                'password': 'new_user'
                            })
     # We should not go to the home page, resulting in a 200 code.
-    assert response.status_code == 200
+    assert response.status_code == 200  
