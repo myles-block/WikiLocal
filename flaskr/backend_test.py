@@ -190,12 +190,17 @@ def test_successful_sign_up(backend, fake_blob):
 
     # mocks getting the bucket
     with patch('google.cloud.storage.Client.bucket') as mock_bucket:
-        mock_bucket.get_blob(fake_username).return_value = None
+        mock_bucket.get_blob.return_value = None
+        # mock_bucket.return_value = None
+        # fake_blob = mock_bucket.get_blob(fake_username)
 
         # calling the backend sign_up
         result = backend.sign_up(fake_username, fake_password)
 
         # checking if the result is a User class and if the user_name matches
+        print(type(result))
+        mock_bucket.get_blob.assert_called_once()
+        mock_bucket.get_blob.assert_called_once_with(fake_username)
         assert isinstance(result, User)
         assert result.username == fake_username
         # assert blob contents is correct
