@@ -29,12 +29,6 @@
             <li>{{ wiki_upload }}</li>
         {% endfor %}
     </ul>
-    <h4>Wiki History: </h4>
-    <ol reversed>
-        {% for wiki in account_settings.wiki_history %}
-        <li>{{ wiki }}</li>
-        {% endfor %}
-    </ol>
     <!-- {{account_settings.wikis_uploaded}} -->
     {{account_settings.about_me}}
 {% endblock %}
