@@ -297,8 +297,8 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     # checking username blob exits in the bucket or not
     with patch('google.cloud.storage.Blob.exists') as mock_exists:
         mock_exists.return_value = True  # blob exists
-        fake_blob.download_as_bytes.return_value = 'Wrong Password'.encode(
-            'utf-8')  # wrong password
+        fake_blob.download_as_string.return_value = (
+                        '{"hashed_password": "incorrect_password", "account_creation": "1111-11-11", "wikis_uploaded": [], "wiki_history": [], "pfp_filename": null, "about_me": ""}')
 
         # calling the backend method sign_in
         result = backend.sign_in(fake_username, fake_password)
@@ -310,6 +310,6 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     #checking the calls to the backend and blob
     backend.user_bucket.blob.assert_called_once_with(fake_username)
     mock_exists.assert_called_once()
-    fake_blob.download_as_bytes.assert_called_once()
+    fake_blob.download_as_string.assert_called_once()
 
 
