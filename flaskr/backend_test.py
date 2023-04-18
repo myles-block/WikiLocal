@@ -383,3 +383,122 @@ def test_user_get_account_failure(backend, fake_blob):
         assert result is None
         backend.user_bucket.blob.assert_called_with(fake_username)
         mock_loader.assert_called_once()
+
+
+def test_update_wikihistory_add_one(backend, fake_blob):
+    fake_username = 'fake username'
+    file_viewed = 'filename'
+
+    # creates return value from get_user_account method
+    getter = {
+    "hashed_password": "fake",
+    "account_creation": "1111-11-11",
+    "wikis_uploaded": [],
+    "wiki_history": [],
+    "pfp_filename": None,
+    "about_me": ""
+    }
+
+    # injects return value into get_user_account
+    with patch.object(Backend, 'get_user_account', return_value=getter) as mock_method:
+        # expected dictionary of what it should be when you view a wiki
+        expected_dict = {
+        "hashed_password": "fake",
+        "account_creation": "1111-11-11",
+        "wikis_uploaded": [],
+        "wiki_history": ["filename"],
+        "pfp_filename": None,
+        "about_me": ""
+    }
+        # calls to backend
+        result = backend.update_wikihistory(fake_username, file_viewed)
+        
+        # checks if result matches and is of type dictionary
+        assert isinstance(result, dict)
+        assert result == expected_dict    
+
+        # checks that blob is called
+        backend.user_bucket.blob.assert_called_with(fake_username)
+        mock_method.assert_called_once()
+        fake_blob.upload_from_string.assert_called_once()
+        fake_blob.upload_from_string.assert_called_once_with(json.dumps(expected_dict), content_type='application/json')
+
+
+def test_update_wikihistory_autoadjust(backend, fake_blob):
+    fake_username = 'fake username'
+    file_viewed = 'filename11'
+
+    # creates return value from get_user_account method
+    getter = {
+    "hashed_password": "fake",
+    "account_creation": "1111-11-11",
+    "wikis_uploaded": [],
+    "wiki_history": ["filename", "filename2", "filename3", "filename4", "filename5", "filename6", "filename7", "filename8", "filename9", "filename 10"],
+    "pfp_filename": None,
+    "about_me": ""
+    }
+
+    # injects return value into get_user_account
+    with patch.object(Backend, 'get_user_account', return_value=getter) as mock_method:
+        # expected dictionary of what it should be when you view a wiki
+        expected_dict = {
+        "hashed_password": "fake",
+        "account_creation": "1111-11-11",
+        "wikis_uploaded": [],
+        "wiki_history": ["filename2", "filename3", "filename4", "filename5", "filename6", "filename7", "filename8", "filename9", "filename 10", "filename11"],
+        "pfp_filename": None,
+        "about_me": ""
+    }
+        # calls to backend
+        result = backend.update_wikihistory(fake_username, file_viewed)
+        
+        # checks if result matches and is of type dictionary
+        assert isinstance(result, dict)
+        assert result == expected_dict    
+
+        # checks that blob is called
+        backend.user_bucket.blob.assert_called_with(fake_username)
+        mock_method.assert_called_once()
+        fake_blob.upload_from_string.assert_called_once()
+        fake_blob.upload_from_string.assert_called_once_with(json.dumps(expected_dict), content_type='application/json')
+
+
+def test_update_wikihistory_same_view(backend, fake_blob):
+    fake_username = 'fake username'
+    file_viewed = 'filename2'
+
+    # creates return value from get_user_account method
+    getter = {
+    "hashed_password": "fake",
+    "account_creation": "1111-11-11",
+    "wikis_uploaded": [],
+    "wiki_history": ["filename1", "filename2", "filename3"],
+    "pfp_filename": None,
+    "about_me": ""
+    }
+
+    # injects return value into get_user_account
+    with patch.object(Backend, 'get_user_account', return_value=getter) as mock_method:
+        # expected dictionary of what it should be when you view a wiki
+        expected_dict = {
+        "hashed_password": "fake",
+        "account_creation": "1111-11-11",
+        "wikis_uploaded": [],
+        "wiki_history": ["filename1", "filename3", "filename2"],
+        "pfp_filename": None,
+        "about_me": ""
+    }
+        # calls to backend
+        result = backend.update_wikihistory(fake_username, file_viewed)
+        
+        # checks if result matches and is of type dictionary
+        assert isinstance(result, dict)
+        assert result == expected_dict    
+
+        # checks that blob is called
+        backend.user_bucket.blob.assert_called_with(fake_username)
+        mock_method.assert_called_once()
+        fake_blob.upload_from_string.assert_called_once()
+        fake_blob.upload_from_string.assert_called_once_with(json.dumps(expected_dict), content_type='application/json')
+
+# go back and change password test cases (and use json.dumps)
