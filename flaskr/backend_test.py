@@ -242,21 +242,28 @@ def test_sign_in_user_exist(backend, fake_blob):
 
     # checking username blob exits in the bucket or not
     with patch('google.cloud.storage.Blob.exists') as mock_exists:
-        mock_exists.return_value = True
-        fake_blob.download_as_bytes.return_value = fake_hashed_password.encode(
-            'utf-8')
+        # mocks hashlib
+        with patch('hashlib.md5') as mock_hashlib:
+            # sets download as string to our return value
+            fake_blob.download_as_string.return_value = (
+                        '{"hashed_password": "fake", "account_creation": "1111-11-11", "wikis_uploaded": [], "wiki_history": [], "pfp_filename": null, "about_me": ""}')
+            # sets haslib password to fix
+            mock_hashlib.return_value.hexdigest.return_value = "fake"
+            
+            # forces the return value of the if to be true
+            mock_exists.return_value = True
 
-        # calling the backend method sign_in
-        result = backend.sign_in(fake_username, fake_password)
+            # calling the backend method sign_in
+            result = backend.sign_in(fake_username, fake_password)
 
-        # checking instance of User class
-        assert isinstance(result, User)
-        assert result.username == fake_username
+            # checking instance of User class
+            assert isinstance(result, User)
+            assert result.username == fake_username
 
     #checking the calls to the backend and blob
     backend.user_bucket.blob.assert_called_once_with(fake_username)
     mock_exists.assert_called_once()
-    fake_blob.download_as_bytes.assert_called_once()
+    fake_blob.download_as_string.assert_called_once()
 
 
 def test_sign_in_user_doesnot_exists(backend, fake_blob):
