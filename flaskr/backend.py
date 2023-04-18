@@ -290,11 +290,14 @@ class Backend:
         # Checks if a photo already exists and deletes old photo
         isExist = storage.Blob(bucket=self.user_bucket, name=photo_name).exists(self.storage_client)
         if isExist:
+            print("HIT")
             existBlob = self.user_bucket.blob(photo_name)
             generation_match_precondition = None
             existBlob.reload()
             existBlob.delete(if_generation_match=generation_match_precondition)
 
+        print(type(file))
+        print(file)
         # Uploads photo to GCS
         photo_blob = self.user_bucket.blob(photo_name)
         generation_match_precondition = 0
