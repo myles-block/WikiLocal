@@ -185,18 +185,16 @@ def test_successful_sign_up(backend, fake_blob):
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
     # Patching notes :
-    # fake_blob.get_blob(fake_username).return_value = None
+    
+    # when you with patch it looks like the following...
+    # you replace whatever function exists in GCS and set it to fake_whatever
+
     # with patch(gcs.bucket.blah.blah.blah) as fake_bucket:
     #     fake_bucket.blob.return_value = None
     #     backend = Backend(fake_bucket)
 
-    # backend.info_bucket.blob.return_value = Something
-
-    # mocks getting the bucket
-    # with patch('google.cloud.storage.Client.bucket.get_blob') as mock_getBlob:
-        
-        # mock_bucket.return_value = None
-        # fake_blob = mock_bucket.get_blob(fake_username)
+    # when you patch straight from code, you call backend syntax without the parameters
+    # ex : fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()...becomes... mock_hashlib.return_value.hexdigest.return_value = "fake" 
 
     with freeze_time('1111-11-11'):
         with patch('hashlib.md5') as mock_hashlib:
@@ -213,21 +211,27 @@ def test_successful_sign_up(backend, fake_blob):
 
             # make sure we are calling the fake_blob
             backend.user_bucket.blob.assert_called_once()
+
+            # make sure we are calling the fake_blob with the approiate username
             backend.user_bucket.blob.assert_called_once_with(fake_username)
+
+            #checks if user is returned
             assert isinstance(result, User)
             assert result.username == fake_username
-    # assert blob contents is correct
 
 def test_failed_sign_up(backend, fake_blob):
-    fake_username = 'fake username'
+    # creates fakes credentials
+    fake_username = 'fake username'    
     fake_password = 'fake password'
+
+    # sets .get_blob to return "something" instead of None
     backend.user_bucket.get_blob.return_value = "something"
     result = backend.sign_up(fake_username, fake_password)
-    
+
+    # checks that it is None and asserts the calls
     assert result == None
     backend.user_bucket.get_blob.assert_called_once()
     backend.user_bucket.get_blob.assert_called_once_with(fake_username)
-    pass
 
 def test_sign_in_user_exist(backend, fake_blob):
     # creating the fake username and password , salted , hashed passsword

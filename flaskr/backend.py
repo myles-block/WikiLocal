@@ -145,11 +145,7 @@ class Backend:
         blob = self.user_bucket.get_blob(username)
         if blob is not None:
             # raise ValueError((f"{username} already exists!"))
-            print("username already exists!")
-            print(blob)
             return None
-        print("username doesn't exists!")
-        print(blob)
 
         # Creates blob with username
         blob = self.user_bucket.blob(username)
