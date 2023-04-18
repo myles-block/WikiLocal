@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from google.cloud import storage
 
 
-def make_endpoints(app):
+def make_endpoints(app, backend):
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -21,31 +21,19 @@ def make_endpoints(app):
     @app.route('/pages/<page_name>', methods=['GET', 'POST'])
     def page(page_name):
         '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
-        backend = Backend()
 
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
 
         if request.method == 'POST':
             if request.form['submit_button'] == 'Yes!':
-
-                new_page_content = backend.update_page('upvote',
-                                                       current_user.username,
-                                                       file_name)
-
-                return render_template('page.html',
-                                       content=new_page_content,
-                                       name=page_name)
+                backend.update_page('upvote', current_user.username, file_name)
+                return redirect(url_for('page', page_name=page_name))
 
             elif request.form['submit_button'] == 'Nope':
-
-                new_page_content = backend.update_page('downvote',
-                                                       current_user.username,
-                                                       file_name)
-
-                return render_template('page.html',
-                                       content=new_page_content,
-                                       name=page_name)
+                backend.update_page('downvote', current_user.username,
+                                    file_name)
+                return redirect(url_for('page', page_name=page_name))
 
         return render_template('page.html',
                                content=page_content,
@@ -53,14 +41,11 @@ def make_endpoints(app):
 
     @app.route('/pages')
     def pages():
-        backend = Backend(info_bucket_name='wiki_info')
-
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places=page_names)
 
     @app.route('/about')
     def about():
-        backend = Backend(info_bucket_name='wiki_info')
         author_images = {
             'Manish': backend.get_image('manish.jpeg'),
             'Gabriel': backend.get_image('gabrielPic.jpg'),
@@ -78,8 +63,6 @@ def make_endpoints(app):
         This route attempts to log a user with a POST request. 
         Otherwise, it just renders a login form where users can try to log in with their credentials
         '''
-        backend = Backend()
-
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
                                    request.form['password'])
@@ -96,7 +79,6 @@ def make_endpoints(app):
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
         msg = ''
-        backend = Backend()
         if request.method == 'POST':
             completed = backend.sign_up(request.form['username'],
                                         request.form['password'])
@@ -122,7 +104,6 @@ def make_endpoints(app):
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
-        backend = Backend(info_bucket_name='wiki_info')
         if request.method == 'POST':
             print(request.files)
             if 'file' not in request.files:
