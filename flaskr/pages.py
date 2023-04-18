@@ -76,7 +76,7 @@ def make_endpoints(app):
         backend = Backend()
         if request.method == 'POST':
             user = backend.sign_up(request.form['username'],
-                                        request.form['password'])
+                                   request.form['password'])
             if user:
                 # user = backend.sign_in(request.form['username'],
                 #                        request.form['password'])
@@ -111,7 +111,8 @@ def make_endpoints(app):
                 # filename = secure_filename(file.filename)
                 backend.upload(file,
                                request.form['wikiname'] + ".txt")  #workaround
-                backend.update_wikiupload(current_user.username, request.form['wikiname'])
+                backend.update_wikiupload(current_user.username,
+                                          request.form['wikiname'])
                 message = 'Uploaded Successfully'
                 return render_template('upload.html', message=message)
         return render_template('upload.html')
@@ -132,9 +133,13 @@ def make_endpoints(app):
         backend = Backend(user_bucket_name='wiki_login')
         account_metadata = backend.get_user_account(current_user.username)
         if account_metadata["pfp_filename"]:
-            user_image = backend.get_image(account_metadata["pfp_filename"], "wiki_login")
-            return render_template('account.html', account_settings=account_metadata, user_image=user_image)
-        return render_template('account.html', account_settings=account_metadata)
+            user_image = backend.get_image(account_metadata["pfp_filename"],
+                                           "wiki_login")
+            return render_template('account.html',
+                                   account_settings=account_metadata,
+                                   user_image=user_image)
+        return render_template('account.html',
+                               account_settings=account_metadata)
 
     @app.route('/update', methods=['GET', 'POST'])
     def update():
@@ -147,7 +152,7 @@ def make_endpoints(app):
                 return render_template('update.html', bio_message=message)
             # Handles adding an image
         return render_template('update.html')
-    
+
     @app.route('/updatePFP', methods=['GET', 'POST'])
     def updatePFP():
         if request.method == 'POST':
@@ -159,7 +164,7 @@ def make_endpoints(app):
                 message = 'Please Select Files'
                 return render_template('upload.html', message=message)
             if file.filename and allowed_photo(file.filename):
-                backend = Backend(user_bucket_name='wiki_login')                    
+                backend = Backend(user_bucket_name='wiki_login')
                 backend.update_pfp(current_user.username, file)
                 message = 'Uploaded Successfully'
                 return render_template('update.html', message=message)
@@ -169,10 +174,9 @@ def make_endpoints(app):
         ''' 
         filename : first name of the file -<abc.jpg-> abc
         '''
-        allowed_extensions = { 'jpeg', 'jpg'}
+        allowed_extensions = {'jpeg', 'jpg'}
         extensions = filename.split('.')[1].lower()
         if extensions in allowed_extensions:
             return True
         else:
             return False
-    
