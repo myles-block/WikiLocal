@@ -214,6 +214,8 @@ class Backend:
         # Find the user's account settings
         blob = self.user_bucket.blob(username)
 
+        print(type(blob.download_as_string))
+
         # Get its dictionary using JSON API
         account_data = json.loads((blob.download_as_string()), parse_constant=None)
 

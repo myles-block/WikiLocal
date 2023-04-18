@@ -1,5 +1,6 @@
 from flaskr.backend import Backend, User
 from unittest.mock import MagicMock, patch
+import unittest
 import pytest
 import base64
 import hashlib
@@ -232,9 +233,6 @@ def test_successful_sign_up(backend, fake_blob):
             mock_hashlib.return_value.hexdigest.return_value = "fake"
             result = backend.sign_up(fake_username, fake_password)
 
-            # checking if the result is a User class and if the user_name matches
-            print(type(result))
-
             # don't need to patch, because we imported json library
             fake_blob.upload_from_string.assert_called_once_with(
                     '{"hashed_password": "fake", "account_creation": "1111-11-11", "wikis_uploaded": [], "wiki_history": [], "pfp_filename": null, "about_me": ""}', content_type='application/json')
@@ -343,3 +341,45 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     fake_blob.download_as_string.assert_called_once()
 
 
+def test_get_user_account_success(backend, fake_blob):
+    # fake username
+    fake_username = 'fake username'
+
+    # mock download as string return value
+    fake_blob.download_as_string.return_value = (
+                        '{"hashed_password": "fake", "account_creation": "1111-11-11", "wikis_uploaded": [], "wiki_history": [], "pfp_filename": null, "about_me": ""}')
+
+    # call backend function with username
+    result = backend.get_user_account(fake_username)
+
+    #expected result
+    expected_dict = {
+        "hashed_password": "fake",
+        "account_creation": "1111-11-11",
+        "wikis_uploaded": [],
+        "wiki_history": [],
+        "pfp_filename": None,
+        "about_me": ""
+    }
+
+    assert isinstance(result, dict)
+    assert result == expected_dict
+    backend.user_bucket.blob.assert_called_with(fake_username)
+    fake_blob.download_as_string.assert_called_once()
+
+
+def test_user_get_account_failure(backend, fake_blob):
+    # fake username
+    fake_username = 'fake username'
+
+    # set the return value to none
+    with patch("json.loads") as mock_loader:
+        mock_loader.return_value = None
+        
+        # call backend
+        result = backend.get_user_account(fake_username)
+
+        # assert that result is none and blob is called
+        assert result is None
+        backend.user_bucket.blob.assert_called_with(fake_username)
+        mock_loader.assert_called_once()
