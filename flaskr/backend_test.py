@@ -22,6 +22,7 @@ def bucket(fake_blob):
 
     bucket = MagicMock()
     bucket.blob.return_value = fake_blob  # returns the value of fake_blob
+    bucket.get_blob.return_value = None
     return bucket
 
 
@@ -183,28 +184,50 @@ def test_successful_sign_up(backend, fake_blob):
     fake_salted = f"{fake_username}{'gamma'}{fake_password}"
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
-    
-    # checking username blob exits in the bucket or not
-    # mocks self.user_bucket.get_blob
+    # Patching notes :
     # fake_blob.get_blob(fake_username).return_value = None
+    # with patch(gcs.bucket.blah.blah.blah) as fake_bucket:
+    #     fake_bucket.blob.return_value = None
+    #     backend = Backend(fake_bucket)
+
+    # backend.info_bucket.blob.return_value = Something
 
     # mocks getting the bucket
-    with patch('google.cloud.storage.Client.bucket') as mock_bucket:
-        mock_bucket.get_blob.return_value = None
+    # with patch('google.cloud.storage.Client.bucket.get_blob') as mock_getBlob:
+        
         # mock_bucket.return_value = None
         # fake_blob = mock_bucket.get_blob(fake_username)
 
+    with freeze_time('1111-11-11'):
+        with patch('hashlib.md5') as mock_hashlib:
         # calling the backend sign_up
-        result = backend.sign_up(fake_username, fake_password)
+            mock_hashlib.return_value.hexdigest.return_value = "fake"
+            result = backend.sign_up(fake_username, fake_password)
 
-        # checking if the result is a User class and if the user_name matches
-        print(type(result))
-        mock_bucket.get_blob.assert_called_once()
-        mock_bucket.get_blob.assert_called_once_with(fake_username)
-        assert isinstance(result, User)
-        assert result.username == fake_username
-        # assert blob contents is correct
+            # checking if the result is a User class and if the user_name matches
+            print(type(result))
 
+            # don't need to patch, because we imported json library
+            fake_blob.upload_from_string.assert_called_once_with(
+                    '{"hashed_password": "fake", "account_creation": "1111-11-11", "wikis_uploaded": [], "wiki_history": [], "pfp_filename": null, "about_me": ""}', content_type='application/json')
+
+            # make sure we are calling the fake_blob
+            backend.user_bucket.blob.assert_called_once()
+            backend.user_bucket.blob.assert_called_once_with(fake_username)
+            assert isinstance(result, User)
+            assert result.username == fake_username
+    # assert blob contents is correct
+
+def test_failed_sign_up(backend, fake_blob):
+    fake_username = 'fake username'
+    fake_password = 'fake password'
+    backend.user_bucket.get_blob.return_value = "something"
+    result = backend.sign_up(fake_username, fake_password)
+    
+    assert result == None
+    backend.user_bucket.get_blob.assert_called_once()
+    backend.user_bucket.get_blob.assert_called_once_with(fake_username)
+    pass
 
 def test_sign_in_user_exist(backend, fake_blob):
     # creating the fake username and password , salted , hashed passsword

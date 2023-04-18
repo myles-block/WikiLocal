@@ -148,6 +148,8 @@ class Backend:
             print("username already exists!")
             print(blob)
             return None
+        print("username doesn't exists!")
+        print(blob)
 
         # Creates blob with username
         blob = self.user_bucket.blob(username)
