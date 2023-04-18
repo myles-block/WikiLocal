@@ -215,17 +215,6 @@ def test_successful_sign_up(backend, fake_blob):
     fake_salted = f"{fake_username}{'gamma'}{fake_password}"
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
-    # Patching notes :
-    
-    # when you with patch it looks like the following...
-    # you replace whatever function exists in GCS and set it to fake_whatever
-
-    # with patch(gcs.bucket.blah.blah.blah) as fake_bucket:
-    #     fake_bucket.blob.return_value = None
-    #     backend = Backend(fake_bucket)
-
-    # when you patch straight from code, you call backend syntax without the parameters
-    # ex : fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()...becomes... mock_hashlib.return_value.hexdigest.return_value = "fake" 
 
     with freeze_time('1111-11-11'):
         with patch('hashlib.md5') as mock_hashlib:
