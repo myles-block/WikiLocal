@@ -319,31 +319,243 @@ def test_sign_in_user_doesnot_exists(backend, fake_blob):
     mock_exists.assert_called_once()
 
 
-def test_sign_in_user_incorrrect_password(backend, fake_blob):
-    # creating the fake username and password , salted , hashed passsword
-    fake_username = 'fake username'
-    fake_password = 'fake_password'
-    fake_salted = f"{fake_username}{'gamma'}{fake_password}"
-    fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
+@pytest.fixture
+def mock_title_content():
+    '''  mocking title content method of the backend to inject in search by content test cases 
+    '''
 
-    # checking username blob exits in the bucket or not
-    with patch('google.cloud.storage.Blob.exists') as mock_exists:
-        mock_exists.return_value = True  # blob exists
-        fake_blob.download_as_string.return_value = (
-            '{"hashed_password": "incorrect_password", "account_creation": "1111-11-11", "wikis_uploaded": [], "wiki_history": [], "pfp_filename": null, "about_me": ""}'
-        )
+    with patch('flaskr.backend.Backend.title_content',
+               return_value={('Page1', 0, 1): 'Page 1 content'},
+               autospec=True) as mock_title_content:
+        yield mock_title_content
 
-        # calling the backend method sign_in
-        result = backend.sign_in(fake_username, fake_password)
-        print('result is', result)
 
-        # checking instance of User class
-        assert result is None
+def test_search_by_title_query_in_title(backend):
+    '''  testing search by title with query which is in page title
+         
+        Args : 
+            backend : mocked backend class
 
-    #checking the calls to the backend and blob
-    backend.user_bucket.blob.assert_called_once_with(fake_username)
-    mock_exists.assert_called_once()
-    fake_blob.download_as_string.assert_called_once()
+    '''
+    fake_page = [['Page1', 0, 1], ['Page 2', 1, 1]]
+    backend.get_all_page_names = MagicMock(return_value=fake_page)
+    result = backend.search_by_title('2')
+    expected = [['Page 2', 1, 1]]
+
+    assert result == expected
+
+    backend.get_all_page_names.assert_called_once()
+
+
+def test_search_by_title_no_query_in_title(backend):
+    '''  testing search by title with query which is not  in page title
+
+         Args : 
+            backend : mocked backend class
+
+    '''
+    fake_page = [['Page1', 0, 1], ['Page 2', 1, 1]]
+    backend.get_all_page_names = MagicMock(return_value=fake_page)
+    result = backend.search_by_title('3')
+    expected = []
+
+    assert result == expected
+
+    backend.get_all_page_names.assert_called_once()
+
+
+def test_search_by_content_query_in_content(backend, mock_title_content):
+    '''  testing search by content with query which is in content of the page 
+
+        Args : 
+            backend : mocked backend class
+            mock_title_content : mocked title_content method 
+
+    '''
+    result = backend.search_by_content('page')
+    expected = [['Page1', 0, 1]]
+
+    assert result == expected
+
+    mock_title_content.assert_called_once()
+
+
+def test_search_by_content_query_not_in_content(backend, mock_title_content):
+    '''  testing search by title with query which is not in content of the page
+
+         Args : 
+            backend : mocked backend class
+            mock_title_content : mocked title_content method 
+
+    '''
+    result = backend.search_by_content('gamma')
+    expected = []
+
+    assert result == expected
+
+    mock_title_content.assert_called_once()
+
+
+def test_update_metadata_with_comments(backend, fake_blob):
+    ''' testing updating metadata with comments method 
+
+        Args : 
+            backend : mocked_backend_class
+            fake_blob : mocked blob object 
+    '''
+    fake_page_metadata = {
+        "wiki_page": "fake_page.txt",
+        "content": "fake page content",
+        "date_created": "1999-10-12",
+        "upvotes": 0,
+        "who_upvoted": None,
+        "downvotes": 0,
+        "who_downvoted": None,
+        "comments": []
+    }
+    backend.get_wiki_page = MagicMock(return_value=fake_page_metadata)
+
+    fake_page = 'fake_page'
+    fake_user = 'fake_user'
+    fake_comment = 'fake_user looks good'
+
+    result = backend.update_metadata_with_comments(fake_page, fake_user,
+                                                   fake_comment)
+
+    expected = {
+        "wiki_page": "fake_page.txt",
+        "content": "fake page content",
+        "date_created": "1999-10-12",
+        "upvotes": 0,
+        "who_upvoted": None,
+        "downvotes": 0,
+        "who_downvoted": None,
+        "comments": [{
+            "fake_user": "fake_user looks good"
+        }]
+    }
+
+    assert result == None
+
+    backend.get_wiki_page.assert_called_once_with("fake_page.txt")
+    backend.info_bucket.blob.assert_called_once_with("fake_page.txt")
+    fake_blob.upload_from_string.assert_called_once_with(
+        json.dumps(expected), content_type='application/json')
+
+
+def test_update_metadata_with_comments_same_user(backend, fake_blob):
+    ''' testing updating metadata with comments method 
+
+        Args : 
+            backend : mocked_backend_class
+            fake_blob : mocked blob object 
+    '''
+    fake_page_metadata = {
+        "wiki_page": "fake_page.txt",
+        "content": "fake page content",
+        "date_created": "1999-10-12",
+        "upvotes": 0,
+        "who_upvoted": None,
+        "downvotes": 0,
+        "who_downvoted": None,
+        "comments": [{
+            "fake_user": "fake_user looks good"
+        }]
+    }
+    backend.get_wiki_page = MagicMock(return_value=fake_page_metadata)
+
+    fake_page = 'fake_page'
+    fake_user = 'fake_user'
+    fake_comment1 = 'fake_user looks good11'
+
+    result = backend.update_metadata_with_comments(fake_page, fake_user,
+                                                   fake_comment1)
+
+    expected = {
+        "wiki_page":
+            "fake_page.txt",
+        "content":
+            "fake page content",
+        "date_created":
+            "1999-10-12",
+        "upvotes":
+            0,
+        "who_upvoted":
+            None,
+        "downvotes":
+            0,
+        "who_downvoted":
+            None,
+        "comments": [{
+            "fake_user": "fake_user looks good"
+        }, {
+            "fake_user": "fake_user looks good11"
+        }]
+    }
+
+    assert result == None
+    backend.get_wiki_page.assert_called_once_with("fake_page.txt")
+    backend.info_bucket.blob.assert_called_once_with("fake_page.txt")
+    fake_blob.upload_from_string.assert_called_once_with(
+        json.dumps(expected), content_type='application/json')
+
+
+def test_update_metadata_with_multiple_comments(backend, fake_blob):
+    ''' testing updating metadata with comments method 
+
+        Args : 
+            backend : mocked_backend_class
+            fake_blob : mocked blob object 
+    '''
+    fake_page_metadata = {
+        "wiki_page": "fake_page.txt",
+        "content": "fake page content",
+        "date_created": "1999-10-12",
+        "upvotes": 0,
+        "who_upvoted": None,
+        "downvotes": 0,
+        "who_downvoted": None,
+        "comments": [{
+            "fake_user": "fake_user looks good"
+        }]
+    }
+    backend.get_wiki_page = MagicMock(return_value=fake_page_metadata)
+
+    fake_page1 = 'fake_page'
+    fake_user1 = 'fake_user1'
+    fake_comment1 = 'fake_user1 looks good'
+
+    result = backend.update_metadata_with_comments(fake_page1, fake_user1,
+                                                   fake_comment1)
+
+    expected = {
+        "wiki_page":
+            "fake_page.txt",
+        "content":
+            "fake page content",
+        "date_created":
+            "1999-10-12",
+        "upvotes":
+            0,
+        "who_upvoted":
+            None,
+        "downvotes":
+            0,
+        "who_downvoted":
+            None,
+        "comments": [{
+            "fake_user": "fake_user looks good"
+        }, {
+            "fake_user1": "fake_user1 looks good"
+        }]
+    }
+
+    assert result == None
+
+    backend.get_wiki_page.assert_called_once_with("fake_page.txt")
+    backend.info_bucket.blob.assert_called_once_with("fake_page.txt")
+    fake_blob.upload_from_string.assert_called_once_with(
+        json.dumps(expected), content_type='application/json')
 
 
 def test_update_page_first_upvote(backend, fake_blob):

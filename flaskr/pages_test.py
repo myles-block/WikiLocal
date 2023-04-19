@@ -205,6 +205,169 @@ def fixit_test_upload(client):
         assert b'Uploaded Successfully' in response.data
 
 
+def test_search_for_title_with_results(client):
+    ''' Testing the search route for search_by_title post with some results 
+
+          Args : 
+            client : Flask Client Object 
+
+    '''
+    with patch('flaskr.backend.Backend.title_content') as mock_title_content:
+        mock_title_content.return_value = {
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
+        }
+
+        with patch('flaskr.backend.Backend.search_by_title') as mock_search:
+            mock_search.return_value = [['George', 0, 1], ['Georgetown', 0, 0]]
+            response = client.post('/search',
+                                   data={
+                                       'search_query': 'geo',
+                                       'search_by': 'title'
+                                   })
+            assert response.status_code == 200
+            assert b'George' in response.data
+            assert b'Georgetown' in response.data
+
+
+def test_search_for_title_with_no_result(client):
+    ''' Testing the search route for search_by_title post for  empty list 
+
+         Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_content') as mock_title_content:
+        mock_title_content.return_value = {
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
+        }
+        with patch('flaskr.backend.Backend.search_by_title') as mock_search:
+            mock_search.return_value = []
+            response = client.post('/search',
+                                   data={
+                                       'search_query': 'george',
+                                       'search_by': 'title'
+                                   })
+            assert response.status_code == 200
+            assert b'No such pages found' in response.data
+
+
+def test_search_for_content_with_results(client):
+    '''  Testing the search rout for search_by_content post with some results
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_content') as mock_title_content:
+        mock_title_content.return_value = {
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
+        }
+
+        with patch('flaskr.backend.Backend.search_by_content') as mock_search:
+            mock_search.return_value = [['title1', 0, 0]]
+            response = client.post('/search',
+                                   data={
+                                       'search_query': 'welcome',
+                                       'search_by': 'content'
+                                   })
+
+            assert response.status_code == 200
+            assert b'title1' in response.data
+
+
+def test_search_for_content_with_no_result(client):
+    '''  Testing the search rout for search_by_content post with some results
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_content') as mock_title_content:
+        mock_title_content.return_value = {
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
+        }
+
+        with patch('flaskr.backend.Backend.search_by_content') as mock_search:
+            mock_search.return_value = []
+            response = client.post('/search',
+                                   data={
+                                       'search_query': 'mock',
+                                       'search_by': 'content'
+                                   })
+
+            assert response.status_code == 200
+            assert b'No such pages found with' in response.data
+
+
+def test_page_commenting(client):
+    '''  Testing the post comment in page route with patching dependencies 
+          get_wiki_page , update_metadata_with_comments , current_user , update_wikihistory
+
+        Args : 
+          client : Flask Client Object 
+    '''
+
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 1, "who_upvoted": ["some_fake_user"], "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
+
+        with patch('flaskr.backend.Backend.update_metadata_with_comments'
+                  ) as mock_update_comment:
+
+            with patch('flaskr.pages.current_user', User('fake_user')):
+                with patch('flaskr.backend.Backend.update_wikihistory'
+                          ) as mock_update_wikihistory:
+                    mock_update_wikihistory.return_value = None
+                    mock_update_comment.return_value = None
+                    #just reflecting expected value to update to call update_metadata_with_comments
+                    expected = {
+                        "wiki_page": "fake_page",
+                        "content": "fake_content",
+                        "date_created": "0000-00-00",
+                        "upvotes": 0,
+                        "who_upvoted": [],
+                        "downvotes": 0,
+                        "who_downvoted": [],
+                        "comments": [{
+                            'fake_user': 'fake_comment'
+                        }]
+                    }
+
+                    resp = client.post('/pages/fake_page',
+                                       data={
+                                           'submit_button': 'post',
+                                           'user_comment': 'fake_comment'
+                                       })
+
+                    assert resp.status_code == 302
+                    mock_update_comment.assert_called_once_with(
+                        "fake_page", "fake_user", "fake_comment")
+
+
+def test_page_commenting_without_user(client):
+    ''' Testing the post comment when user is not logged in 
+
+        Args : 
+            Client : Flask Client Object 
+    '''
+
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
+
+        resp = client.post('/pages/fake_page', data={'submit_button': 'post'})
+
+        assert resp.status_code == 200
+        assert b'Please login or signup to make a comment' in resp.data
+
+
 def test_wiki_page_upvote(client):
     ''' Testing the wiki_page route for a wiki page with one upvote.
          Args : 

@@ -1,8 +1,8 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-from flask_login import login_user, login_required, logout_user, current_user
-from flaskr.backend import Backend, User
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from google.cloud import storage
+from flaskr.backend import Backend, User
 
 
 def make_endpoints(app, backend):
@@ -37,6 +37,16 @@ def make_endpoints(app, backend):
                 backend.update_page('downvote', current_user.username,
                                     file_name)
                 return redirect(url_for('page', page_name=page_name))
+            elif request.form.get('submit_button') == 'post':
+                if current_user.is_authenticated:
+                    current_username = current_user.username
+                    user_comment = request.form.get('user_comment')
+                    wiki_page_name = page_name
+                    backend.update_metadata_with_comments(
+                        wiki_page_name, current_username, user_comment)
+                    return redirect(url_for('page', page_name=page_name),)
+                else:
+                    flash('Please login or signup to make a comment')
 
         return render_template('page.html',
                                content=page_content,
@@ -130,6 +140,31 @@ def make_endpoints(app, backend):
             return True
         else:
             return False
+
+    @app.route('/search', methods=["GET", "POST"])
+    def search():
+        '''  post the resulted pages from the user query in pages.html
+
+        '''
+        if request.method == "POST":
+            search_query = request.form.get('search_query')
+            search_by = request.form.get('search_by')
+            if search_by == 'title':
+                resulted_pages = backend.search_by_title(search_query)
+                if resulted_pages:
+                    return render_template('pages.html', places=resulted_pages)
+                else:
+                    message = f"No such pages found for '{search_query}' "
+                    return render_template('pages.html', message=message)
+            elif search_by == 'content':
+                resulted_pages = backend.search_by_content(search_query)
+                if resulted_pages:
+                    return render_template('pages.html', places=resulted_pages)
+                else:
+                    message = f"No such pages found with '{search_query}' in the content "
+                    return render_template('pages.html', message=message)
+        else:
+            return redirect('/pages.html', 200)
 
     @app.route('/account', methods=['GET', 'POST'])
     def account():

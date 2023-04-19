@@ -38,5 +38,4 @@ def create_app(test_config=None):
     # and additional endpoints.
     backend = Backend()
     pages.make_endpoints(app, backend)
-
     return app

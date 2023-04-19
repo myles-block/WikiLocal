@@ -227,6 +227,78 @@ class Backend:
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
 
+    #helper function
+    def title_content(self):
+        ''' return dictionary with the page name , upvote , downvote in tuple as key and it's content in value if exists
+            Otherwise , returns an empty dictionary 
+            example : {('wiki_page1',0,1): 'content'} 
+        
+            Args : Self
+        '''
+        title_content = {}
+        page_info = self.get_all_page_names()
+        for page in page_info:
+            if tuple(page) not in title_content:
+                try:
+                    page_metadata = self.get_wiki_page(page[0] + '.txt')
+                    if page_metadata:
+                        content = page_metadata.get('content')
+                        title_content[tuple(page)] = content
+                except Exception as e:
+                    continue
+        return title_content
+
+    def search_by_title(self, query):
+        """  Returns list of list with page , upvotes and downvotes  if query found within the pages.
+            Otherwise , return empty list
+            Example : return Value -> [['page1',0,1]]
+
+            Args : 
+
+            query : text value obtained from search form 
+        """
+        final_results = []
+        pages_info = self.get_all_page_names()
+        for page in pages_info:
+            if query.lower() in page[0].lower():
+                final_results.append(page)
+        return final_results
+
+    def search_by_content(self, query):
+        """  Returns list of  list with page name , upvote and downvote if query found in content
+             Otherwise , returns an empty list 
+             Example : query found->[['page1',0,1]] else->[]
+
+            Args : 
+            query : text value obtained from search form 
+
+        """
+        final_results = []
+        pages_contents = self.title_content()
+        for page, page_content in pages_contents.items():
+            if query.lower() in page_content.lower():
+                final_results.append(list(page))
+        return final_results
+
+    def update_metadata_with_comments(self, page_name, current_user,
+                                      user_comment):
+        ''' Update the wiki_page metadata with comments and user name if user makes a comment and upload to gcs 
+
+            Args : 
+                page_name : name of the wiki_page which is used to get metadata
+                current_user : logged in user who makes the comment 
+                comments : users comment -> expected to receive some text since commentbox is made text required
+        '''
+        wiki_page_name = page_name + '.txt'
+        page_metadata = self.get_wiki_page(wiki_page_name)
+
+        if page_metadata:
+            page_metadata['comments'].append({current_user: user_comment})
+            updated_metadata_json = json.dumps(page_metadata)
+            blob = self.info_bucket.blob(wiki_page_name)
+            blob.upload_from_string(updated_metadata_json,
+                                    content_type='application/json')
+
     def update_page(self, action_taken, username, page_name):
         ''' Updates a wiki-page's json file in terms of
             its vote count and comments section.
