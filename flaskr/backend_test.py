@@ -42,21 +42,34 @@ def backend(bucket, fake_client):
 
 def test_get_all_pages(backend, fake_client, fake_blob):
 
-    # Setting blob's name property
-    fake_blob.name = 'Example Blob.txt'
+    # Patching get_wiki_page method used to get each page's rating.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+        mock_get_wiki.return_value = {
+            "wiki_page": "Example Blob.txt",
+            "content": "fake blob content",
+            "date_created": "1111-11-11",
+            "upvotes": 0,
+            "who_upvoted": [],
+            "downvotes": 0,
+            "who_downvoted": [],
+            "comments": []
+        }
 
-    # Mocking listing all the blobs of a bucket.
-    fake_client.list_blobs.return_value = [fake_blob]
+        # Setting blob's name property
+        fake_blob.name = 'Example Blob.txt'
 
-    # Calling the actual function with the mock data.
-    result = backend.get_all_page_names()
-    expected = ['Example Blob']
+        # Mocking listing all the blobs of a bucket.
+        fake_client.list_blobs.return_value = [fake_blob]
 
-    # Are we getting what we want?
-    assert result == expected
+        # Calling the actual function with the mock data.
+        result = backend.get_all_page_names()
+        expected = [['Example Blob', 0, 0]]
 
-    # Check whether the backend and list_blobs were actually called.
-    backend.storage_client.list_blobs.assert_called_once()
+        # Are we getting what we want?
+        assert result == expected
+
+        # Check whether the backend and list_blobs were actually called.
+        backend.storage_client.list_blobs.assert_called_once()
 
 
 def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
@@ -81,7 +94,7 @@ def test_get_all_pages_with_no_text_files(backend, fake_client, fake_blob):
 def test_get_wiki_page(backend, fake_blob):
 
     # Mocking the download_as_string
-    fake_blob.download_as_string.return_value = '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}'
+    fake_blob.download_as_string.return_value = '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
 
     # Getting the dummy data
     result = backend.get_wiki_page('really_fake_page.txt')
@@ -91,9 +104,9 @@ def test_get_wiki_page(backend, fake_blob):
         'content': 'really_fake_content',
         'date_created': '0000-00-00',
         'upvotes': 0,
-        'who_upvoted': None,
+        'who_upvoted': [],
         'downvotes': 0,
-        'who_downvoted': None,
+        'who_downvoted': [],
         'comments': []
     }
 
@@ -110,9 +123,7 @@ def test_get_wiki_page_failure(backend, fake_blob):
     with patch('json.loads') as mock_loads:
         # This is supposed to fail; we do not want to return anything.
         mock_loads.return_value = None
-
         result = backend.get_wiki_page('extremely_fake_page.txt')
-
         expected = None
 
         assert result == expected
@@ -141,7 +152,7 @@ def test_upload(backend, fake_blob):
         backend.info_bucket.blob.assert_called_once_with(
             'uploaded_fake_page.txt')
         fake_blob.upload_from_string.assert_called_once_with(
-            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}',
+            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
             content_type='application/json')
 
 
@@ -333,6 +344,224 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     backend.user_bucket.blob.assert_called_once_with(fake_username)
     mock_exists.assert_called_once()
     fake_blob.download_as_string.assert_called_once()
+
+
+def test_update_page_first_upvote(backend, fake_blob):
+    # Patching the get_wiki_pages method used in the update_page method.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+
+        # Setting it's return value as an actual dictionary representing a page's metadata.
+        mock_get_wiki.return_value = {
+            "wiki_page": "uploaded_fake_page.txt",
+            "content": "fake page content",
+            "date_created": "1111-11-11",
+            "upvotes": 0,
+            "who_upvoted": [],
+            "downvotes": 0,
+            "who_downvoted": [],
+            "comments": []
+        }
+
+        # Patching json's API to be able to execute blob.upload_from_string with a fake json file.
+        with patch('json.dumps') as mock_json_dump:
+
+            mock_json_dump.return_value = 'fake_metadata_json_file'
+
+            expected = {
+                "wiki_page": "uploaded_fake_page.txt",
+                "content": "fake page content",
+                "date_created": "1111-11-11",
+                "upvotes": 1,
+                "who_upvoted": ['fake_username'],
+                "downvotes": 0,
+                "who_downvoted": [],
+                "comments": []
+            }
+
+            result = backend.update_page('upvote', 'fake_username',
+                                         'fake_wiki_page.txt')
+
+            # Checking the calls to the backend and the fake blob.
+            assert expected == result
+            backend.info_bucket.blob.assert_called_once_with(
+                'fake_wiki_page.txt')
+            fake_blob.upload_from_string.assert_called_once_with(
+                'fake_metadata_json_file', content_type='application/json')
+
+
+def test_update_page_second_upvote(backend, fake_blob):
+    # Patching the get_wiki_pages method used in the update_page method.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+
+        # Setting it's return value as an actual dictionary representing a page's metadata.
+        mock_get_wiki.return_value = {
+            "wiki_page": "uploaded_fake_page.txt",
+            "content": "fake page content",
+            "date_created": "1111-11-11",
+            "upvotes": 1,
+            "who_upvoted": ['fake_username'],
+            "downvotes": 0,
+            "who_downvoted": [],
+            "comments": []
+        }
+
+        # Patching json's API to be able to execute blob.upload_from_string with a fake json file.
+        with patch('json.dumps') as mock_json_dump:
+
+            mock_json_dump.return_value = 'fake_metadata_json_file'
+
+            expected = {
+                "wiki_page": "uploaded_fake_page.txt",
+                "content": "fake page content",
+                "date_created": "1111-11-11",
+                "upvotes": 0,
+                "who_upvoted": [],
+                "downvotes": 0,
+                "who_downvoted": [],
+                "comments": []
+            }
+
+            result = backend.update_page('upvote', 'fake_username',
+                                         'fake_wiki_page.txt')
+
+            # Checking the calls to the backend and the fake blob.
+            assert expected == result
+            backend.info_bucket.blob.assert_called_once_with(
+                'fake_wiki_page.txt')
+            fake_blob.upload_from_string.assert_called_once_with(
+                'fake_metadata_json_file', content_type='application/json')
+
+
+def test_update_page_upvote_with_existing_downvote(backend, fake_blob):
+    # Patching the get_wiki_pages method used in the update_page method.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+
+        # Setting it's return value as an actual dictionary representing a page's metadata.
+        mock_get_wiki.return_value = {
+            "wiki_page": "uploaded_fake_page.txt",
+            "content": "fake page content",
+            "date_created": "1111-11-11",
+            "upvotes": 0,
+            "who_upvoted": [],
+            "downvotes": 1,
+            "who_downvoted": ['fake_username'],
+            "comments": []
+        }
+
+        # Patching json's API to be able to execute blob.upload_from_string with a fake json file.
+        with patch('json.dumps') as mock_json_dump:
+
+            mock_json_dump.return_value = 'fake_metadata_json_file'
+
+            expected = {
+                "wiki_page": "uploaded_fake_page.txt",
+                "content": "fake page content",
+                "date_created": "1111-11-11",
+                "upvotes": 0,
+                "who_upvoted": [],
+                "downvotes": 0,
+                "who_downvoted": [],
+                "comments": []
+            }
+
+            result = backend.update_page('upvote', 'fake_username',
+                                         'fake_wiki_page.txt')
+
+            # Checking the calls to the backend and the fake blob.
+            assert expected == result
+            backend.info_bucket.blob.assert_called_once_with(
+                'fake_wiki_page.txt')
+            fake_blob.upload_from_string.assert_called_once_with(
+                'fake_metadata_json_file', content_type='application/json')
+
+
+def test_update_page_downvote_with_two_existing_downvote(backend, fake_blob):
+    # Patching the get_wiki_pages method used in the update_page method.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+
+        # Setting it's return value as an actual dictionary representing a page's metadata.
+        mock_get_wiki.return_value = {
+            "wiki_page": "uploaded_fake_page.txt",
+            "content": "fake page content",
+            "date_created": "1111-11-11",
+            "upvotes": 0,
+            "who_upvoted": [],
+            "downvotes": 2,
+            "who_downvoted": ['fake_username1', 'fake_username2'],
+            "comments": []
+        }
+
+        # Patching json's API to be able to execute blob.upload_from_string with a fake json file.
+        with patch('json.dumps') as mock_json_dump:
+
+            mock_json_dump.return_value = 'fake_metadata_json_file'
+
+            expected = {
+                "wiki_page": "uploaded_fake_page.txt",
+                "content": "fake page content",
+                "date_created": "1111-11-11",
+                "upvotes": 0,
+                "who_upvoted": [],
+                "downvotes": 3,
+                "who_downvoted": [
+                    'fake_username1', 'fake_username2', 'fake_username3'
+                ],
+                "comments": []
+            }
+
+            result = backend.update_page('downvote', 'fake_username3',
+                                         'fake_wiki_page.txt')
+
+            # Checking the calls to the backend and the fake blob.
+            assert expected == result
+            backend.info_bucket.blob.assert_called_once_with(
+                'fake_wiki_page.txt')
+            fake_blob.upload_from_string.assert_called_once_with(
+                'fake_metadata_json_file', content_type='application/json')
+
+
+def test_update_page_one_upvote_one_downvote_with_two_different_users(
+        backend, fake_blob):
+    # Patching the get_wiki_pages method used in the update_page method.
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_get_wiki:
+
+        # Setting it's return value as an actual dictionary representing a page's metadata.
+        mock_get_wiki.return_value = {
+            "wiki_page": "uploaded_fake_page.txt",
+            "content": "fake page content",
+            "date_created": "1111-11-11",
+            "upvotes": 0,
+            "who_upvoted": [],
+            "downvotes": 1,
+            "who_downvoted": ['fake_username1'],
+            "comments": []
+        }
+
+        # Patching json's API to be able to execute blob.upload_from_string with a fake json file.
+        with patch('json.dumps') as mock_json_dump:
+
+            mock_json_dump.return_value = 'fake_metadata_json_file'
+
+            expected = {
+                "wiki_page": "uploaded_fake_page.txt",
+                "content": "fake page content",
+                "date_created": "1111-11-11",
+                "upvotes": 1,
+                "who_upvoted": ['fake_username2'],
+                "downvotes": 1,
+                "who_downvoted": ['fake_username1'],
+                "comments": []
+            }
+
+            result = backend.update_page('upvote', 'fake_username2',
+                                         'fake_wiki_page.txt')
+
+            # Checking the calls to the backend and the fake blob.
+            assert expected == result
+            backend.info_bucket.blob.assert_called_once_with(
+                'fake_wiki_page.txt')
+            fake_blob.upload_from_string.assert_called_once_with(
+                'fake_metadata_json_file', content_type='application/json')
 
 
 def test_get_user_account_success(backend, fake_blob):
