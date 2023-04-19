@@ -196,12 +196,11 @@ class Backend:
             if page not in title_content:
                 try:
                     page_metadata = self.get_wiki_page(page + '.txt')
-                    #checking page_metadata
                     if page_metadata:
                         content = page_metadata.get('content')
                         title_content[page] = content
                 except Exception as e:
-                    pass
+                    continue
 
         return title_content
 
