@@ -58,9 +58,7 @@ def make_endpoints(app):
         backend = Backend()
 
         if request.method == 'POST':
-            user = backend.sign_in(request.form['username'],
-                                   request.form['password'])
-
+            user = backend.sign_in(request.form['username'], request.form['password'])
             if user:
                 login_user(user)
                 return redirect('/')
