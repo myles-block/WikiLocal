@@ -1,0 +1,37 @@
+
+body {
+    background-color: #d7cfcf; /* replace with the color you want */
+  }
+
+
+  .btn btn-secondary{
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+
+  }
+  .pages {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    margin-top: 30px;
+  }
+  
+  .pages ul {
+    list-style: disc;
+    margin: 14px;
+    padding: 15px;
+  }
+  
+  .pages ul li {
+    margin-bottom: 10px;
+  }
+  
+  .pages ul li a {
+    text-decoration: none;
+    color: #282b2d;
+  }
+  
+  .pages ul li a:hover {
+    text-decoration: underline;
+  }

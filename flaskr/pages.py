@@ -1,11 +1,11 @@
 from flask import render_template, Flask, url_for, flash, request, redirect
-from flask_login import login_user, login_required, logout_user, current_user
-from flaskr.backend import Backend, User
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from google.cloud import storage
+from flaskr.backend import Backend, User
 
 
-def make_endpoints(app):
+def make_endpoints(app, backend):
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -18,26 +18,47 @@ def make_endpoints(app):
 
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route('/pages/<page_name>')
+    @app.route('/pages/<page_name>', methods=['GET', 'POST'])
     def page(page_name):
         '''This route handles displaying the content of any wiki page within our wiki_info GCS bucket'''
-        backend = Backend()
+
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
-        backend.update_wikihistory(current_user.username, page_name)
+
+        if current_user.is_authenticated:
+            backend.update_wikihistory(current_user.username, page_name)
+
+        if request.method == 'POST':
+            if request.form['submit_button'] == 'Yes!':
+                backend.update_page('upvote', current_user.username, file_name)
+                return redirect(url_for('page', page_name=page_name))
+
+            elif request.form['submit_button'] == 'Nope':
+                backend.update_page('downvote', current_user.username,
+                                    file_name)
+                return redirect(url_for('page', page_name=page_name))
+            elif request.form.get('submit_button') == 'post':
+                if current_user.is_authenticated:
+                    current_username = current_user.username
+                    user_comment = request.form.get('user_comment')
+                    wiki_page_name = page_name
+                    backend.update_metadata_with_comments(
+                        wiki_page_name, current_username, user_comment)
+                    return redirect(url_for('page', page_name=page_name),)
+                else:
+                    flash('Please login or signup to make a comment')
+
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
 
     @app.route('/pages')
     def pages():
-        backend = Backend(info_bucket_name='wiki_info')
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places=page_names)
 
     @app.route('/about')
     def about():
-        backend = Backend(info_bucket_name='wiki_info')
         author_images = {
             'Manish': backend.get_image('manish.jpeg', 'wiki_info'),
             'Gabriel': backend.get_image('gabrielPic.jpg', 'wiki_info'),
@@ -55,12 +76,9 @@ def make_endpoints(app):
         This route attempts to log a user with a POST request. 
         Otherwise, it just renders a login form where users can try to log in with their credentials
         '''
-        backend = Backend()
-
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
                                    request.form['password'])
-
             if user:
                 login_user(user)
                 return redirect('/')
@@ -73,13 +91,10 @@ def make_endpoints(app):
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
         msg = ''
-        backend = Backend()
         if request.method == 'POST':
             user = backend.sign_up(request.form['username'],
                                    request.form['password'])
             if user:
-                # user = backend.sign_in(request.form['username'],
-                #                        request.form['password'])
                 login_user(user)
                 return redirect('/')
             else:
@@ -97,7 +112,6 @@ def make_endpoints(app):
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
-        backend = Backend(info_bucket_name='wiki_info')
         if request.method == 'POST':
             print(request.files)
             if 'file' not in request.files:
@@ -108,7 +122,6 @@ def make_endpoints(app):
                 message = 'Please Select Files'
                 return render_template('upload.html', message=message)
             if file.filename and allowed_file(file.filename):
-                # filename = secure_filename(file.filename)
                 backend.upload(file,
                                request.form['wikiname'] + ".txt")  #workaround
                 backend.update_wikiupload(current_user.username,
@@ -127,6 +140,31 @@ def make_endpoints(app):
             return True
         else:
             return False
+
+    @app.route('/search', methods=["GET", "POST"])
+    def search():
+        '''  post the resulted pages from the user query in pages.html
+
+        '''
+        if request.method == "POST":
+            search_query = request.form.get('search_query')
+            search_by = request.form.get('search_by')
+            if search_by == 'title':
+                resulted_pages = backend.search_by_title(search_query)
+                if resulted_pages:
+                    return render_template('pages.html', places=resulted_pages)
+                else:
+                    message = f"No such pages found for '{search_query}' "
+                    return render_template('pages.html', message=message)
+            elif search_by == 'content':
+                resulted_pages = backend.search_by_content(search_query)
+                if resulted_pages:
+                    return render_template('pages.html', places=resulted_pages)
+                else:
+                    message = f"No such pages found with '{search_query}' in the content "
+                    return render_template('pages.html', message=message)
+        else:
+            return redirect('/pages.html', 200)
 
     @app.route('/account', methods=['GET', 'POST'])
     def account():
