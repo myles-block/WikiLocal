@@ -356,5 +356,4 @@ def test_sort_pages(backend, option, expected, mock_title_date):
 
     result = backend.sort_pages(option)
     assert result == expected
-    mock_title_date.assert_called_once(
-    )  # making sure called once for each option
+    mock_title_date.assert_called_once()

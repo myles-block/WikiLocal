@@ -261,25 +261,17 @@ class Backend:
                                    Option 2 -> Z TO A 
                                    Option 3 -> Latest To Previous 
         '''
-        page_date_created = self.title_date()  # dict
+        page_date_created = self.title_date()
         all_page_names = list(page_date_created.keys())
 
         if user_option == 'a_z':
-            resulted_pages = sorted(
-                all_page_names
-            )  # sorted function sorts the list in ascending order -> A to Z
+            resulted_pages = sorted(all_page_names)
             return resulted_pages
         elif user_option == 'z_a':
-            resulted_pages = sorted(all_page_names, key=str.lower,
-                                    reverse=True)  # descending order
+            resulted_pages = sorted(all_page_names, key=str.lower, reverse=True)
             return resulted_pages
         elif user_option == 'year':
             resulted_pages = sorted(page_date_created,
                                     key=lambda x: page_date_created[x],
-                                    reverse=True)  # by latest date
+                                    reverse=True)
             return resulted_pages
-
-
-# backend = Backend()
-# print(backend.sort_pages('z_a'))
-# print(backend.get_wiki_page('Apple Carniege Library.txt'))
