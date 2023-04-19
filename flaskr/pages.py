@@ -58,7 +58,8 @@ def make_endpoints(app):
         backend = Backend()
 
         if request.method == 'POST':
-            user = backend.sign_in(request.form['username'], request.form['password'])
+            user = backend.sign_in(request.form['username'],
+                                   request.form['password'])
             if user:
                 login_user(user)
                 return redirect('/')
@@ -76,8 +77,6 @@ def make_endpoints(app):
             user = backend.sign_up(request.form['username'],
                                    request.form['password'])
             if user:
-                # user = backend.sign_in(request.form['username'],
-                #                        request.form['password'])
                 login_user(user)
                 return redirect('/')
             else:
@@ -106,7 +105,6 @@ def make_endpoints(app):
                 message = 'Please Select Files'
                 return render_template('upload.html', message=message)
             if file.filename and allowed_file(file.filename):
-                # filename = secure_filename(file.filename)
                 backend.upload(file,
                                request.form['wikiname'] + ".txt")  #workaround
                 backend.update_wikiupload(current_user.username,

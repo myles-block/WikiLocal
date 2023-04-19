@@ -172,11 +172,13 @@ class Backend:
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''
-        if storage.Blob(bucket=self.user_bucket, name=username).exists(self.storage_client):
+        if storage.Blob(bucket=self.user_bucket,
+                        name=username).exists(self.storage_client):
             blob = self.user_bucket.blob(username)
 
             # Get its content as a dictionary using the JSON API and returns none if doesn't exist
-            account_data = json.loads((blob.download_as_string()),parse_constant=None)
+            account_data = json.loads((blob.download_as_string()),
+                                      parse_constant=None)
             if not account_data:
                 return None
 
@@ -298,8 +300,6 @@ class Backend:
             existBlob.reload()
             existBlob.delete(if_generation_match=generation_match_precondition)
 
-        print(type(file))
-        print(file)
         # Uploads photo to GCS
         photo_blob = self.user_bucket.blob(photo_name)
         generation_match_precondition = 0

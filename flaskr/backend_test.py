@@ -628,8 +628,6 @@ def test_update_pfp_no_existence(backend, fake_blob):
             assert result == expected_dict
 
             # assert that the blob is called from buckets
-            # HOW TO HANDLE TWO ASSERT CALLED WITH CALLS (passes if I remove 618)
-            # backend.user_bucket.blob.assert_called_with(fake_username)
             backend.user_bucket.blob.assert_called_with(photo_name)
 
             # assert that your get_accounts is being called
@@ -646,8 +644,6 @@ def test_update_pfp_no_existence(backend, fake_blob):
                 json.dumps(expected_dict), content_type='application/json')
 
 
-# not sure if I need to give fake blob photo (how am I checking the photo contents)
-# MIGHT NEED TO GIVE FAKE BLOB A PHOTO OR SOMETHING????
 def test_update_pfp_with_existence(backend, fake_blob):
     fake_username = "fake username"
     photo_name = fake_username + ".jpg"
