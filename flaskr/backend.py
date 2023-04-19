@@ -239,7 +239,7 @@ class Backend:
                 final_results.append(page_title)
         return final_results
 
-    def updating_metadata_with_comments(self, page_name, current_user,
+    def update_metadata_with_comments(self, page_name, current_user,
                                         user_comment):
         ''' Update the wiki_page metadata with comments and user name if user makes a comment and upload to gcs 
 
@@ -250,11 +250,11 @@ class Backend:
         '''
         wiki_page_name = page_name + '.txt'
         page_metadata = self.get_wiki_page(
-            wiki_page_name)  #returns the page metadata in dict
+            wiki_page_name) 
 
         if page_metadata:
             page_metadata['comments'].append({current_user:
-                user_comment})  #updating the username and comments
+                user_comment}) 
             updated_metadata_json = json.dumps(page_metadata)
             blob = self.info_bucket.blob(wiki_page_name)
             blob.upload_from_string(updated_metadata_json,

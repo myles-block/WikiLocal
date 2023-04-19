@@ -25,12 +25,12 @@ def make_endpoints(app, backend):
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
         if request.method == 'POST':
-            if request.form.get('post_button') == 'post':
+            if request.form.get('submit_button') == 'post':
                 if current_user.is_authenticated:
                     current_username = current_user.username
                     user_comment = request.form.get('user_comment')
                     wiki_page_name = page_name
-                    backend.updating_metadata_with_comments(
+                    backend.update_metadata_with_comments(
                         wiki_page_name, current_username, user_comment)
                     return redirect(url_for('page', page_name=page_name),)
                 else:
