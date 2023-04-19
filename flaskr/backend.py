@@ -132,6 +132,7 @@ class Backend:
         ''' Adds data to the content bucket 
          file : path of the file 
          filename : name of the file user selected
+         username: username of current user
          '''
         blob = self.info_bucket.blob(filename)
 
@@ -153,42 +154,72 @@ class Backend:
 
     def sign_up(self, username, password):
         ''' Adds data to the content bucket 
-         user.get_id : username 
-         user : User object
+         username : user created username 
+         password : user created password
          '''
+        # Hashes username and password with salt
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
+
+        # Checks if blob exist with username and raise error if it does
+        blob = self.user_bucket.get_blob(username)
+        if blob is not None:
+            # raise ValueError((f"{username} already exists!"))
+            return None
+
+        # Creates blob with username
         blob = self.user_bucket.blob(username)
-        isExist = storage.Blob(bucket=self.user_bucket,
-                               name=username).exists(self.storage_client)
-        if isExist:
-            return False
-        else:
-            with blob.open("w") as f:
-                f.write(hashed.hexdigest())
-            return True
+
+        # Get today's date in YYYY-MM-DD format.
+        date = datetime.today().strftime('%Y-%m-%d')
+
+        # Set up the dictionary containing all the author's metadata.
+        metadata = {
+            'hashed_password': hashed.hexdigest(),
+            'account_creation': date,
+            'wikis_uploaded': [],
+            'wiki_history': [],
+            'pfp_filename': None,
+            'about_me': '',
+        }
+
+        # Convert it to a JSON file.
+        metadata_json = json.dumps(metadata)
+
+        # Save it to the GCS bucket.
+        blob.upload_from_string(metadata_json, content_type='application/json')
+        return User(username)
 
     def sign_in(self, username, password):
         '''Checks if the given username and password matches a user in our GCS bucket'''
         if storage.Blob(bucket=self.user_bucket,
                         name=username).exists(self.storage_client):
-            user = self.user_bucket.blob(username)
+            blob = self.user_bucket.blob(username)
+
+            # Get its content as a dictionary using the JSON API and returns none if doesn't exist
+            account_data = json.loads((blob.download_as_string()),
+                                      parse_constant=None)
+            if not account_data:
+                return None
 
             salted = f"{username}{'gamma'}{password}"
             hashed_password = hashlib.md5(salted.encode()).hexdigest()
 
-            pw = user.download_as_bytes()
-
-            if hashed_password == pw.decode('utf-8'):
+            # Takes password from GCS JSON
+            if hashed_password == account_data['hashed_password']:
                 return User(username)
         return None
 
-    def get_image(self, image_name):  # 2
+    def get_image(self, image_name, bucket_name):  # 2
         ''' Gets an image from the content bucket.
-            image_name : name of the image to be get from bucket  '''
+            image_name : name of the image to be get from bucket
+            bucket_name : denotes which bucket to use  '''
 
         try:
-            blob = self.info_bucket.blob(image_name)
+            if bucket_name == "wiki_info":
+                blob = self.info_bucket.blob(image_name)
+            else:
+                blob = self.user_bucket.blob(image_name)
             image_data = blob.download_as_bytes()
             if image_data:
                 base64_image = base64.b64encode(image_data).decode('utf-8')
@@ -246,3 +277,109 @@ class Backend:
 
         # Returning the updated dictionary for testing purposes.
         return page_metadata
+    def get_user_account(self, username):
+        ''' Gets a user's account settings
+            username: Current user
+        '''
+
+        # Find the user's account settings
+        blob = self.user_bucket.blob(username)
+
+        # Get its dictionary using JSON API
+        account_data = json.loads((blob.download_as_string()),
+                                  parse_constant=None)
+
+        # If doesn't exist, return none
+        if not account_data:
+            return None
+
+        return account_data
+
+    def update_wikiupload(self, username, fileuploaded):
+        ''' Changes and overwrites account json when a user uploads a new wiki.
+            username : Current user that caused action.
+            fileuploaded : Filename that user uploaded
+        '''
+        blob = self.user_bucket.blob(username)
+
+        # Get the current wiki_page's json file as a dictionary.
+        user_metadata = Backend.get_user_account(self, username)
+        user_metadata['wikis_uploaded'].append(fileuploaded)
+
+        # Overwrite current account metadata
+        blob.upload_from_string(json.dumps(user_metadata),
+                                content_type='application/json')
+        return user_metadata
+
+    def update_wikihistory(self, username, file_viewed):
+        ''' Changes and overwrites account json when a user views a new wiki.
+            username : Current user that caused action.
+            file_viewed : Filename that user viewed
+        '''
+        blob = self.user_bucket.blob(username)
+
+        # Get the current wiki_page's json file as a dictionary
+        user_metadata = Backend.get_user_account(self, username)
+
+        # Checks if wiki viewed is a dupe, limit hit
+        wiki_history_array = user_metadata['wiki_history']
+        if file_viewed in wiki_history_array:
+            index = wiki_history_array.index(file_viewed)
+            wiki_history_array.pop(index)
+        elif len(wiki_history_array) >= 10:
+            wiki_history_array.pop(0)
+
+        # Adds new viewed wiki to history
+        user_metadata['wiki_history'].append(file_viewed)
+        # Overwrite current account metadata
+        blob.upload_from_string(json.dumps(user_metadata),
+                                content_type='application/json')
+        return user_metadata
+
+    def update_bio(self, username, bio):
+        ''' Changes and overwrites account json when a user updates their bio.
+            username : Current user that caused action.
+            bio : New Bio
+        '''
+        blob = self.user_bucket.blob(username)
+
+        # Get the current wiki_page's json file as a dictionary
+        user_metadata = Backend.get_user_account(self, username)
+
+        user_metadata['about_me'] = bio
+        blob.upload_from_string(json.dumps(user_metadata),
+                                content_type='application/json')
+        return user_metadata
+
+    def update_pfp(self, username, file):
+        ''' Changes and overwrites account json when a user updates their photo.
+            username : Current user that caused action.
+            file : Profile Photo file
+        '''
+        user_blob = self.user_bucket.blob(username)
+
+        # Creates Photoname
+        photo_name = username + ".jpg"
+
+        # Checks if a photo already exists and deletes old photo
+        isExist = storage.Blob(bucket=self.user_bucket,
+                               name=photo_name).exists(self.storage_client)
+        if isExist:
+            existBlob = self.user_bucket.blob(photo_name)
+            generation_match_precondition = None
+            existBlob.reload()
+            existBlob.delete(if_generation_match=generation_match_precondition)
+
+        # Uploads photo to GCS
+        photo_blob = self.user_bucket.blob(photo_name)
+        generation_match_precondition = 0
+        photo_blob.upload_from_file(
+            file, if_generation_match=generation_match_precondition)
+        # Get the current wiki_page's json file as a dictionary
+        user_metadata = Backend.get_user_account(self, username)
+
+        # Add photo to GCS
+        user_metadata['pfp_filename'] = photo_name
+        user_blob.upload_from_string(json.dumps(user_metadata),
+                                     content_type='application/json')
+        return user_metadata
