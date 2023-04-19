@@ -343,7 +343,7 @@ def test_sign_in_user_incorrrect_password(backend, fake_blob):
     #checking the calls to the backend and blob
     backend.user_bucket.blob.assert_called_once_with(fake_username)
     mock_exists.assert_called_once()
-    fake_blob.download_as_bytes.assert_called_once()
+    fake_blob.download_as_string.assert_called_once()
 
 
 def test_update_page_first_upvote(backend, fake_blob):

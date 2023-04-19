@@ -24,7 +24,9 @@ def make_endpoints(app, backend):
 
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
-        backend.update_wikihistory(current_user.username, page_name)
+
+        if current_user.is_authenticated:
+            backend.update_wikihistory(current_user.username, page_name)
 
         if request.method == 'POST':
             if request.form['submit_button'] == 'Yes!':
