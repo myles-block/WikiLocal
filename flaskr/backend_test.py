@@ -820,6 +820,7 @@ def test_user_get_account_failure(backend, fake_blob):
         backend.user_bucket.blob.assert_called_with(fake_username)
         mock_loader.assert_called_once()
 
+
 def test_update_wikihistory_add_one(backend, fake_blob):
     fake_username = 'fake username'
     file_viewed = 'filename'
