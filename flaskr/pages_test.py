@@ -28,43 +28,6 @@ def client(app):
             yield client
 
 
-@pytest.fixture
-def test_user():
-    username = 'testing'
-    password = 'testing'
-    user = User(username)
-    # Upload a test user to the bucket.
-    user.save(password)
-    yield user
-    blob = user.bucket.blob(username)
-    # After we have finished testing, just delete it.
-    blob.delete()
-
-
-@pytest.fixture
-def test_newuser():
-    username = 'new_user'
-    password = 'new_user'
-    user = User(username)
-    # Upload a test user to the bucket.
-    user.save(password)
-    yield user
-    blob = user.bucket.blob(username)
-    # After we have finished testing, just delete it.
-    blob.delete()
-
-
-@pytest.fixture
-def test_repeatuser():
-    username = 'new_user_same'
-    password = 'new_user'
-    user = User(username)
-    # Upload a test user to the bucket.
-    user.save(password)
-    yield user
-    # blob = user.bucket.blob(username)
-
-
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
 def test_home_page(client):
@@ -92,26 +55,67 @@ def test_about_page(client):
 
 
 def test_pages_page(client):
+    '''  Test function to test '/pages' route 
+
+        Arg : Client 
+    '''
+
+    # Patch the get_all_page_names method from the backend so we don't call GCS
     with patch('flaskr.backend.Backend.get_all_page_names') as mock_page:
-        mock_page.return_value = ['Page 1', 'Page 2']
+        mock_page.return_value = [['Page 1', 12, 0], ['Page 2', 1, 6]]
+
         resp = client.get('/pages')
+
+        # Check that the request succeeds and both the page name and ratings are displayed.
         assert resp.status_code == 200
         assert b"Page 1" in resp.data
         assert b"Page 2" in resp.data
+        assert b"6" in resp.data
+        assert b"12" in resp.data
 
 
 def test_wiki_page(client):
+    '''  Test function to test the parameterised '/pages/<page_name>' route 
+
+        Arg : Client 
+    '''
+
+    # Patch the get_wiki_page method so we don't call GCS
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        with patch('flaskr.backend.Backend.update_wikihistory'
+                  ) as mock_update_wikihistory:
+            mock_update_wikihistory.return_value = None
+            mock_page.return_value = json.loads(
+                '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
+            )
+
+            resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
+
+            assert resp.status_code == 200
+            assert b"really_fake_content" in resp.data
+
+
+def test_wiki_page_with_comments(client):
+    '''  Test function to test the parameterised '/pages/<page_name>' route 
+         when it has comments.
+        Arg : Client 
+    '''
+
+    # Patch the get_wiki_page method so we don't call GCS
     with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
         mock_page.return_value = json.loads(
-            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}'
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": [{"fake_commenter": "This is a fake comment"}]}'
         )
 
         resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
+
+        # Check the request succeeds and the both the comment's author and content are displayed.
         assert resp.status_code == 200
-        assert b"really_fake_content" in resp.data
+        assert b"fake_commenter" in resp.data
+        assert b"This is a fake comment" in resp.data
 
 
-def fixit_test_login(client, test_user):
+def test_login(client):
     # Send a response to the route trying to verify for the test user.
     with patch('flaskr.backend.Backend.sign_in') as mock_login:
         mock_login.return_value = User('fake_username')
@@ -127,7 +131,7 @@ def fixit_test_login(client, test_user):
         assert current_user.username == 'fake_username'
 
 
-def fixit_test_login_incorrect_password(client, test_user):
+def test_login_incorrect_password(client):
     # If we pass the wrong information, we will not be redirected.
     with patch('flaskr.backend.Backend.sign_in') as mock_login:
         mock_login.return_value = None
@@ -142,7 +146,7 @@ def fixit_test_login_incorrect_password(client, test_user):
     assert b'Invalid username or password' in response.data
 
 
-def fixit_test_logout(client, test_user):
+def test_logout(client):
 
     # login_user(User('fake_username'))
     response = client.get('/logout')
@@ -151,25 +155,23 @@ def fixit_test_logout(client, test_user):
     assert current_user.is_authenticated == False
 
 
-def fixit_test_signup(client, test_user):
+def test_signup(client):
     # Send a response to the route trying to verify for the test user.
     with patch('flaskr.backend.Backend.sign_up') as mock_signup:
-        with patch('flaskr.backend.Backend.sign_in') as mock_signin:
 
-            mock_signup.return_value = True
-            mock_signin.return_value = User('new_user')
-            response = client.post('/signup',
-                                   data={
-                                       'username': 'new_user',
-                                       'password': 'new_user'
-                                   })
-            # We should get redirected to the home page, resulting in a 302 code.
-            assert response.status_code == 302
-            # The current_user should be updated to 'testing'.
-            assert current_user.username == 'new_user'
+        mock_signup.return_value = User('new_user')
+        response = client.post('/signup',
+                               data={
+                                   'username': 'new_user',
+                                   'password': 'new_user'
+                               })
+        # We should get redirected to the home page, resulting in a 302 code.
+        assert response.status_code == 302
+        # The current_user should be updated to 'testing'.
+        assert current_user.username == 'new_user'
 
 
-def fixit_test_incorrect_signup(client, test_repeatuser):
+def test_incorrect_signup(client):
     # Send a response to the route trying to hit the same user.
 
     with patch('flaskr.backend.Backend.sign_up') as mock_signup:
@@ -210,18 +212,23 @@ def test_search_for_title_with_results(client):
             client : Flask Client Object 
 
     '''
-    with patch('flaskr.backend.Backend.get_all_page_names') as mock_all_page:
-        mock_all_page.return_value = ['title1', 'page2', 'crowded']
+    with patch('flaskr.backend.Backend.title_content') as mock_title_content:
+        mock_title_content.return_value = {
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
+        }
 
         with patch('flaskr.backend.Backend.search_by_title') as mock_search:
-            mock_search.return_value = ['crowded']
+            mock_search.return_value = [['George', 0, 1], ['Georgetown', 0, 0]]
             response = client.post('/search',
                                    data={
-                                       'search_query': 'crow',
+                                       'search_query': 'geo',
                                        'search_by': 'title'
                                    })
             assert response.status_code == 200
-            assert b'crowded' in response.data
+            assert b'George' in response.data
+            assert b'Georgetown' in response.data
 
 
 def test_search_for_title_with_no_result(client):
@@ -230,9 +237,12 @@ def test_search_for_title_with_no_result(client):
          Args : 
             client : Flask Client Object 
     '''
-    with patch('flaskr.backend.Backend.get_all_page_names') as mock_all_page:
-        mock_all_page.return_value = ['title1', 'page2', 'crowded']
-
+    with patch('flaskr.backend.Backend.title_content') as mock_title_content:
+        mock_title_content.return_value = {
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
+        }
         with patch('flaskr.backend.Backend.search_by_title') as mock_search:
             mock_search.return_value = []
             response = client.post('/search',
@@ -252,12 +262,13 @@ def test_search_for_content_with_results(client):
     '''
     with patch('flaskr.backend.Backend.title_content') as mock_title_content:
         mock_title_content.return_value = {
-            'title1': 'This is fake title1 content.Welcome!',
-            'title2': 'This is fake title2 content.Goodbye'
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
         }
 
         with patch('flaskr.backend.Backend.search_by_content') as mock_search:
-            mock_search.return_value = ['title1']
+            mock_search.return_value = [['title1', 0, 0]]
             response = client.post('/search',
                                    data={
                                        'search_query': 'welcome',
@@ -276,23 +287,26 @@ def test_search_for_content_with_no_result(client):
     '''
     with patch('flaskr.backend.Backend.title_content') as mock_title_content:
         mock_title_content.return_value = {
-            'title1': 'This is fake title1 content.Welcome!',
-            'title2': 'This is fake title2 content.Goodbye'
+            ('title1', 0, 0): 'This is fake title1 content.Welcome!',
+            ('George', 0, 1): 'This is fake george  content.Goodbye',
+            ('Georgetown', 0, 0): 'This is fake george town content.Goodbye'
         }
 
         with patch('flaskr.backend.Backend.search_by_content') as mock_search:
             mock_search.return_value = []
             response = client.post('/search',
                                    data={
-                                       'search_query': 'georgetown',
+                                       'search_query': 'mock',
                                        'search_by': 'content'
                                    })
 
             assert response.status_code == 200
             assert b'No such pages found with' in response.data
 
+
 def test_page_commenting(client):
-    '''  Testing the post comment in page route 
+    '''  Testing the post comment in page route with patching dependencies 
+          get_wiki_page , update_metadata_with_comments , current_user , update_wikihistory
 
         Args : 
           client : Flask Client Object 
@@ -300,39 +314,41 @@ def test_page_commenting(client):
 
     with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
         mock_page.return_value = json.loads(
-            '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": [], "comments": []}'
+            '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 1, "who_upvoted": ["some_fake_user"], "downvotes": 0, "who_downvoted": [], "comments": []}'
         )
 
         with patch('flaskr.backend.Backend.update_metadata_with_comments'
                   ) as mock_update_comment:
 
-            # Also patch the flask_login current_user module; replace with a fake user.
             with patch('flaskr.pages.current_user', User('fake_user')):
+                with patch('flaskr.backend.Backend.update_wikihistory'
+                          ) as mock_update_wikihistory:
+                    mock_update_wikihistory.return_value = None
+                    mock_update_comment.return_value = None
+                    #just reflecting expected value to update to call update_metadata_with_comments
+                    expected = {
+                        "wiki_page": "fake_page",
+                        "content": "fake_content",
+                        "date_created": "0000-00-00",
+                        "upvotes": 0,
+                        "who_upvoted": [],
+                        "downvotes": 0,
+                        "who_downvoted": [],
+                        "comments": [{
+                            'fake_user': 'fake_comment'
+                        }]
+                    }
 
-                #sample how it looks like after calling
-                fake_metadata = {
-                    "wiki_page": "fake_page",
-                    "content": "fake_content",
-                    "date_created": "0000-00-00",
-                    "upvotes": 0,
-                    "who_upvoted": None,
-                    "downvotes": 0,
-                    "who_downvoted": [],
-                    "comments": [{
-                        'fake_userr': 'fake_comment'
-                    }]
-                }
-
-                response = client.post('/pages/fake_page',
+                    resp = client.post('/pages/fake_page',
                                        data={
                                            'submit_button': 'post',
                                            'user_comment': 'fake_comment'
                                        })
 
-                assert response.status_code == 302
+                    assert resp.status_code == 302
+                    mock_update_comment.assert_called_once_with(
+                        "fake_page", "fake_user", "fake_comment")
 
-                mock_update_comment.assert_called_once_with(
-                    "fake_page", "fake_user", "fake_comment")
 
 def test_page_commenting_without_user(client):
     ''' Testing the post comment when user is not logged in 
@@ -346,8 +362,89 @@ def test_page_commenting_without_user(client):
             '{"wiki_page": "fake_page", "content": "fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": [], "comments": []}'
         )
 
-        resp = client.post('/pages/fake_page',
-                           data={'submit_button': 'post'}) 
+        resp = client.post('/pages/fake_page', data={'submit_button': 'post'})
 
         assert resp.status_code == 200
         assert b'Please login or signup to make a comment' in resp.data
+
+
+def test_wiki_page_upvote(client):
+    ''' Testing the wiki_page route for a wiki page with one upvote.
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    # Patch the get_wiki_page method
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 1, "who_upvoted": ["some_fake_user"], "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
+
+        # Patch the backend method for update page.
+        with patch('flaskr.backend.Backend.update_page') as mock_update:
+
+            # Also patch the flask_login current_user module; replace with a fake user.
+            with patch('flaskr.pages.current_user', User('some_fake_user')):
+                with patch('flaskr.backend.Backend.update_wikihistory'
+                          ) as mock_update_wikihistory:
+                    mock_update_wikihistory.return_value = None
+                    # Mock the update_page method by making it return a dictionary representing wiki page metadata.
+                    mock_update.return_value = {
+                        "wiki_page": "really_fake_page",
+                        "content": "really_fake_content",
+                        "date_created": "0000-00-00",
+                        "upvotes": 1,
+                        "who_upvoted": ['some_fake_user'],
+                        "downvotes": 0,
+                        "who_downvoted": [],
+                        "comments": []
+                    }
+
+                    resp = client.post('/pages/testingmetadata',
+                                       data={'submit_button': 'Yes!'})
+
+                    # Assert the request succeeds and the vote count is reflected.
+                    assert resp.status_code == 302
+                    assert b"1" in resp.data
+
+
+def test_wiki_page_downvotes(client):
+    ''' Testing the pages parameterised route for a wiki page with two downvotes
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    # Patch the get_wiki_page method
+    with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 2, "who_downvoted": ["some_fake_user", "another_fake_user"], "comments": []}'
+        )
+
+        # Patch the backend method for update page.
+        with patch('flaskr.backend.Backend.update_page') as mock_update:
+
+            # Also patch the flask_login current_user module; replace with a fake user.
+
+            with patch('flaskr.pages.current_user', User('some_fake_user')):
+                with patch('flaskr.backend.Backend.update_wikihistory'
+                          ) as mock_update_wikihistory:
+                    mock_update_wikihistory.return_value = None
+                    # Mock the update_page method by making it return a dictionary representing wiki page metadata.
+                    mock_update.return_value = {
+                        "wiki_page": "really_fake_page",
+                        "content": "really_fake_content",
+                        "date_created": "0000-00-00",
+                        "upvotes": 0,
+                        "who_upvoted": [],
+                        "downvotes": 2,
+                        "who_downvoted": [
+                            'some_fake_user', 'another_fake_user'
+                        ],
+                        "comments": []
+                    }
+
+                    resp = client.post('/pages/testingmetadata',
+                                       data={'submit_button': 'Nope'})
+
+                    # Assert the request succeeds and the vote count is reflected.
+                    assert resp.status_code == 302

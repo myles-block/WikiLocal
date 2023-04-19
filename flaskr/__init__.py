@@ -1,5 +1,7 @@
 from flaskr import pages
+
 from flaskr.backend import Backend
+
 from flask import Flask
 
 from flask_login import LoginManager

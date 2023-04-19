@@ -24,8 +24,20 @@ def make_endpoints(app, backend):
 
         file_name = page_name + '.txt'
         page_content = backend.get_wiki_page(file_name)
+
+        if current_user.is_authenticated:
+            backend.update_wikihistory(current_user.username, page_name)
+
         if request.method == 'POST':
-            if request.form.get('submit_button') == 'post':
+            if request.form['submit_button'] == 'Yes!':
+                backend.update_page('upvote', current_user.username, file_name)
+                return redirect(url_for('page', page_name=page_name))
+
+            elif request.form['submit_button'] == 'Nope':
+                backend.update_page('downvote', current_user.username,
+                                    file_name)
+                return redirect(url_for('page', page_name=page_name))
+            elif request.form.get('submit_button') == 'post':
                 if current_user.is_authenticated:
                     current_username = current_user.username
                     user_comment = request.form.get('user_comment')
@@ -35,21 +47,18 @@ def make_endpoints(app, backend):
                     return redirect(url_for('page', page_name=page_name),)
                 else:
                     flash('Please login or signup to make a comment')
-        backend.update_wikihistory(current_user.username, page_name)
+
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
 
     @app.route('/pages')
     def pages():
-
-        backend = Backend(info_bucket_name='wiki_info')
-        page_names = backend.get_all_page_names()
-        return render_template('pages.html', places=page_names)
+        page_names = backend.get_all_page_names()  #
+        return render_template('pages.html', places=page_names)  #1
 
     @app.route('/about')
     def about():
-
         author_images = {
             'Manish': backend.get_image('manish.jpeg', 'wiki_info'),
             'Gabriel': backend.get_image('gabrielPic.jpg', 'wiki_info'),
@@ -67,7 +76,6 @@ def make_endpoints(app, backend):
         This route attempts to log a user with a POST request. 
         Otherwise, it just renders a login form where users can try to log in with their credentials
         '''
-
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
                                    request.form['password'])
@@ -104,7 +112,6 @@ def make_endpoints(app, backend):
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
-
         if request.method == 'POST':
             print(request.files)
             if 'file' not in request.files:
@@ -144,20 +151,21 @@ def make_endpoints(app, backend):
             search_by = request.form.get('search_by')
             if search_by == 'title':
                 resulted_pages = backend.search_by_title(search_query)
-                if len(resulted_pages) > 0:
+                if resulted_pages:
                     return render_template('pages.html', places=resulted_pages)
                 else:
                     message = f"No such pages found for '{search_query}' "
                     return render_template('pages.html', message=message)
             elif search_by == 'content':
                 resulted_pages = backend.search_by_content(search_query)
-                if len(resulted_pages) > 0:
+                if resulted_pages:
                     return render_template('pages.html', places=resulted_pages)
                 else:
                     message = f"No such pages found with '{search_query}' in the content "
                     return render_template('pages.html', message=message)
         else:
             return redirect('/pages.html', 200)
+
     @app.route('/account', methods=['GET', 'POST'])
     def account():
         backend = Backend(user_bucket_name='wiki_login')
