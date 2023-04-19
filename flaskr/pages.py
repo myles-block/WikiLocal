@@ -35,6 +35,7 @@ def make_endpoints(app, backend):
                     return redirect(url_for('page', page_name=page_name),)
                 else:
                     flash('Please login or signup to make a comment')
+        backend.update_wikihistory(current_user.username, page_name)
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
@@ -42,6 +43,7 @@ def make_endpoints(app, backend):
     @app.route('/pages')
     def pages():
 
+        backend = Backend(info_bucket_name='wiki_info')
         page_names = backend.get_all_page_names()
         return render_template('pages.html', places=page_names)
 
@@ -49,9 +51,9 @@ def make_endpoints(app, backend):
     def about():
 
         author_images = {
-            'Manish': backend.get_image('manish.jpeg'),
-            'Gabriel': backend.get_image('gabrielPic.jpg'),
-            'Myles': backend.get_image('mylesPic.jpg')
+            'Manish': backend.get_image('manish.jpeg', 'wiki_info'),
+            'Gabriel': backend.get_image('gabrielPic.jpg', 'wiki_info'),
+            'Myles': backend.get_image('mylesPic.jpg', 'wiki_info')
         }
         return render_template('about.html', author_images=author_images)
 
@@ -69,7 +71,6 @@ def make_endpoints(app, backend):
         if request.method == 'POST':
             user = backend.sign_in(request.form['username'],
                                    request.form['password'])
-
             if user:
                 login_user(user)
                 return redirect('/')
@@ -83,15 +84,11 @@ def make_endpoints(app, backend):
     def signup():
         msg = ''
         if request.method == 'POST':
-            completed = backend.sign_up(request.form['username'],
-                                        request.form['password'])
-            if completed:
-                user = backend.sign_in(request.form['username'],
-                                       request.form['password'])
+            user = backend.sign_up(request.form['username'],
+                                   request.form['password'])
+            if user:
                 login_user(user)
                 return redirect('/')
-                # msg = "Successfully Completed!!! Now Sign In!!!"
-                # return render_template('signup.html', message = msg)
             else:
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message=msg)
@@ -118,9 +115,10 @@ def make_endpoints(app, backend):
                 message = 'Please Select Files'
                 return render_template('upload.html', message=message)
             if file.filename and allowed_file(file.filename):
-                # filename = secure_filename(file.filename)
                 backend.upload(file,
                                request.form['wikiname'] + ".txt")  #workaround
+                backend.update_wikiupload(current_user.username,
+                                          request.form['wikiname'])
                 message = 'Uploaded Successfully'
                 return render_template('upload.html', message=message)
         return render_template('upload.html')
@@ -160,3 +158,55 @@ def make_endpoints(app, backend):
                     return render_template('pages.html', message=message)
         else:
             return redirect('/pages.html', 200)
+    @app.route('/account', methods=['GET', 'POST'])
+    def account():
+        backend = Backend(user_bucket_name='wiki_login')
+        account_metadata = backend.get_user_account(current_user.username)
+        if account_metadata["pfp_filename"]:
+            user_image = backend.get_image(account_metadata["pfp_filename"],
+                                           "wiki_login")
+            return render_template('account.html',
+                                   account_settings=account_metadata,
+                                   user_image=user_image)
+        return render_template('account.html',
+                               account_settings=account_metadata)
+
+    @app.route('/update', methods=['GET', 'POST'])
+    def update():
+        #alter upload settings
+        if request.method == 'POST':
+            if request.form['bio']:
+                backend = Backend(user_bucket_name='wiki_login')
+                backend.update_bio(current_user.username, request.form['bio'])
+                message = 'Uploaded Successfully'
+                return render_template('update.html', bio_message=message)
+            # Handles adding an image
+        return render_template('update.html')
+
+    @app.route('/updatePFP', methods=['GET', 'POST'])
+    def updatePFP():
+        if request.method == 'POST':
+            if 'file' not in request.files:
+                message = 'No file part'
+                return render_template('update.html', message=message)
+            file = request.files['file']
+            if file.filename == ' ':
+                message = 'Please Select Files'
+                return render_template('upload.html', message=message)
+            if file.filename and allowed_photo(file.filename):
+                backend = Backend(user_bucket_name='wiki_login')
+                backend.update_pfp(current_user.username, file)
+                message = 'Uploaded Successfully'
+                return render_template('update.html', message=message)
+        return render_template('update.html')
+
+    def allowed_photo(filename):
+        ''' 
+        filename : first name of the file -<abc.jpg-> abc
+        '''
+        allowed_extensions = {'jpeg', 'jpg'}
+        extensions = filename.split('.')[1].lower()
+        if extensions in allowed_extensions:
+            return True
+        else:
+            return False
