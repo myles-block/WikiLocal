@@ -277,6 +277,7 @@ class Backend:
 
         # Returning the updated dictionary for testing purposes.
         return page_metadata
+
     def get_user_account(self, username):
         ''' Gets a user's account settings
             username: Current user

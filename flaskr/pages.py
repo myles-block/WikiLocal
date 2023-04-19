@@ -35,7 +35,7 @@ def make_endpoints(app, backend):
                 backend.update_page('downvote', current_user.username,
                                     file_name)
                 return redirect(url_for('page', page_name=page_name))
-        
+
         return render_template('page.html',
                                content=page_content,
                                name=page_name)
