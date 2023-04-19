@@ -182,11 +182,68 @@ def test_incorrect_signup(client):
                                    'username': 'new_user',
                                    'password': 'new_user'
                                })
-        # We should get redirected to the home page, resulting in a 302 code.
-        assert response.status_code == 200
         # The current_user should be updated to 'testing'.
         assert current_user.is_authenticated == False
-    # We should not go to the home page, resulting in a 200 code.
+        # We should not go to the home page, resulting in a 200 code.
+        assert response.status_code == 200
+
+
+def test_other_account(client):
+    ''' Testing the account parameterised route for a user profile.
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    # Patch the get_user_account method.
+    with patch('flaskr.backend.Backend.get_user_account') as mock_get_user:
+
+        mock_get_user.return_value = {
+            'hashed_password': "whatever_pasword",
+            'account_creation': "anydate",
+            'wikis_uploaded': [],
+            'wiki_history': [],
+            'pfp_filename': None,
+            'about_me': 'some funny info about me',
+        }
+
+        resp = client.get('/account/fake_user')
+
+        # Assert the request succeeds and the user info and username are reflected.
+        assert resp.status_code == 200
+        assert b"fake_user" in resp.data
+        assert b"some funny info about me" in resp.data
+
+
+def test_other_account_with_pfp(client):
+
+    # Patch the get_user_account method.
+    with patch('flaskr.backend.Backend.get_user_account') as mock_get_user:
+
+        with patch('flaskr.backend.Backend.get_image') as mock_get_image:
+
+            expected = base64.b64encode(b'Fake_Image_Data').decode('utf-8')
+
+            mock_get_image.return_value = expected
+
+            mock_get_user.return_value = {
+                'hashed_password': "whatever_pasword",
+                'account_creation': "anydate",
+                'wikis_uploaded': [],
+                'wiki_history': [],
+                'pfp_filename': "some_fake_image.jpg",
+                'about_me': 'some funny info about me',
+            }
+
+            expected_html = f"<img src='data:image/jpeg;base64,{expected}' alt='Account Image'>"
+
+            resp = client.get('/account/fake_user')
+
+            # Assert the request succeeds and the user info, username and picture are reflected.
+            assert resp.status_code == 200
+            assert b"fake_user" in resp.data
+            assert b"some funny info about me" in resp.data
+            assert expected_html.encode() in resp.data
+            assert b"no pfp attached" not in resp.data
 
 
 def fixit_test_upload(client):

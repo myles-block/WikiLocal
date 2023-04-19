@@ -179,6 +179,23 @@ def make_endpoints(app, backend):
         return render_template('account.html',
                                account_settings=account_metadata)
 
+    @app.route('/account/<user_name>')
+    def others_account(user_name):
+        backend = Backend(user_bucket_name='wiki_login')
+        account_metadata = backend.get_user_account(user_name)
+
+        if account_metadata["pfp_filename"]:
+            user_image = backend.get_image(account_metadata["pfp_filename"],
+                                           "wiki_login")
+            return render_template('other_account.html',
+                                   account_settings=account_metadata,
+                                   user_image=user_image,
+                                   username=user_name)
+
+        return render_template('other_account.html',
+                               account_settings=account_metadata,
+                               username=user_name)
+
     @app.route('/update', methods=['GET', 'POST'])
     def update():
         #alter upload settings

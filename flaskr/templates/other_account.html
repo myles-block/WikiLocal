@@ -1,0 +1,34 @@
+{% extends "main.html" %}
+{% block title %} {{username}} {% endblock %}
+{% block content %}
+    <h1>{{username}}</h1>
+    <h4>Profile Photo </h4>
+    {% if account_settings.pfp_filename %}
+        <img src='data:image/jpeg;base64,{{ user_image }}' alt='Account Image'>
+    {% else %}
+    <p>
+        <small><i>"<u>no pfp attached</u>"</i></small>
+    </p>
+    {% endif %}
+
+    <h4>Bio:</h4> 
+    {% if account_settings.about_me %}
+    <p>
+        <small><i>{{account_settings.about_me}}</i></small>
+        <br>
+    </p>
+    {% else %}
+    <p>
+        <small><i>"<u>no bio created</u>"</i></small>
+    </p>
+    {% endif %}
+
+    <h4>Wiki's Uploaded: </h4>
+    <ul>
+        {% for wiki_upload in account_settings.wikis_uploaded %}
+            <li>{{ wiki_upload }}</li>
+        {% endfor %}
+    </ul>
+    <!-- {{account_settings.wikis_uploaded}} -->
+    {{account_settings.about_me}}
+{% endblock %}
