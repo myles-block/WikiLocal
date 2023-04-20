@@ -529,4 +529,35 @@ def test_update_bio(client):
             resp = client.post('/update', data={'bio': 'testing'})
             assert resp.status_code == 200
             assert b'Uploaded Successfully' in resp.data
-        
+
+def test_user_account(client):
+    ''' Testing the account parameterised route for a user profile.
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    # Patch the get_user_account method.
+    with patch('flaskr.pages.current_user', User('fake_user')) as mock_user:
+        mock_user.is_authenticated = True
+        with patch('flaskr.backend.Backend.get_user_account') as mock_get_user:
+
+            mock_get_user.return_value = {
+                'hashed_password': "whatever_pasword",
+                'account_creation': "anydate",
+                'wikis_uploaded': [],
+                'wiki_history': ["wikiview1", "wikiview2", "wikiview3"],
+                'pfp_filename': None,
+                'about_me': 'some funny info about me',
+            }
+
+            resp = client.get('/account')
+
+            # Assert the request succeeds and the user info and username are reflected.
+            assert resp.status_code == 200
+            assert b"Account Settings" in resp.data
+            assert mock_user.username == 'fake_user'
+            # assert b'Hi fake_user!' in resp.data
+            assert b"some funny info about me" in resp.data
+            assert b"wikiview1" in resp.data
+            assert b"wikiview2" in resp.data
+            assert b"wikiview3" in resp.data
