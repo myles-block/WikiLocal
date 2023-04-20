@@ -1,0 +1,23 @@
+/* css for about page */
+
+.column {
+    float: left;
+    height: 500px;
+    width: 300px;;
+    padding: 20px;
+}
+.column img {
+    height: 500px;
+    width: 300px;
+}
+.row::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+.about p{
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    margin-top: 30px;
+}

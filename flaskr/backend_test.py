@@ -318,6 +318,104 @@ def test_sign_in_user_doesnot_exists(backend, fake_blob):
     # checking exists was called
     mock_exists.assert_called_once()
 
+def test_title_content_non_empty(backend):
+    ''' testing title_content method for valid title and content stored in dictionary 
+
+        Args : 
+            backend : mocked backend class 
+
+        MagicMock : a subclass of Mock with all the magic methods pre-created and ready to use
+    '''
+    backend.get_all_page_names = MagicMock(return_value = [['page1',0,1]])
+    backend.get_wiki_page = MagicMock(return_value = {
+                                                        "wiki_page": "page1.txt",
+                                                        "content": "fake page1 content",
+                                                        "date_created": "1999-10-12",
+                                                        "upvotes": 0,
+                                                        "who_upvoted": [],
+                                                        "downvotes": 0,
+                                                        "who_downvoted": [],
+                                                        "comments": []
+                                                    })
+    result = backend.title_content()
+    expected  = {("page1",0,1):"fake page1 content"}
+    assert result == expected 
+
+    backend.get_all_page_names.assert_called_once()
+    backend.get_wiki_page.assert_called_once_with('page1.txt')
+
+def test_title_content_empty(backend):
+    ''' testing title_content method for valid title and content stored in dictionary 
+
+        Args : 
+            backend : mocked backend class 
+            
+        MagicMock : a subclass of Mock with all the magic methods pre-created and ready to use
+    '''
+    backend.get_all_page_names = MagicMock(return_value = [])
+    backend.get_wiki_page = MagicMock(return_value = { })
+
+    result = backend.title_content()
+    expected  = { }
+    
+    assert result == expected 
+
+    backend.get_all_page_names.assert_called_once()
+
+
+def test_title_date_non_empty(backend):
+    ''' testing title_date method for valid [list of title ,upvote and downvote] and date_creted stored in dictionary 
+
+        Args : 
+            backend : mocked backend class 
+            
+        MagicMock : a subclass of Mock with all the magic methods pre-created and ready to use
+    '''
+    backend.get_all_page_names = MagicMock(return_value = [['page1',0,1]])
+    backend.get_wiki_page = MagicMock(return_value = {
+                                                        "wiki_page": "page1.txt",
+                                                        "content": "fake page1 content",
+                                                        "date_created": "1999-10-12",
+                                                        "upvotes": 0,
+                                                        "who_upvoted": [],
+                                                        "downvotes": 0,
+                                                        "who_downvoted": [],
+                                                        "comments": []
+                                                    })
+    
+    result = backend.title_date()
+    expected  = {('page1',0,1) : '1999-10-12' }
+
+    assert result == expected 
+
+    backend.get_all_page_names.assert_called_once()
+    backend.get_wiki_page.assert_called_once_with('page1.txt')
+
+
+def test_title_date_empty(backend):
+    ''' testing title_date method for valid [list of title ,upvote and downvote] and date_creted stored in dictionary 
+
+        Args : 
+            backend : mocked backend class 
+            
+        MagicMock : a subclass of Mock with all the magic methods pre-created and ready to use
+    '''
+    backend.get_all_page_names = MagicMock(return_value = [])
+    backend.get_wiki_page = MagicMock(return_value = {})
+    
+    result = backend.title_date()
+    expected  = {}
+
+    assert result == expected 
+
+    backend.get_all_page_names.assert_called_once()
+
+
+
+
+
+
+
 
 @pytest.fixture
 def mock_title_content():
