@@ -505,3 +505,28 @@ def test_wiki_page_downvotes(client):
 
                     # Assert the request succeeds and the vote count is reflected.
                     assert resp.status_code == 302
+
+def test_update_bio(client):
+    ''' Testing the update pfp route
+         Args : 
+            client : Flask Client Object 
+    '''
+    
+    expected_dict = {
+        "hashed_password": "fake",
+        "account_creation": "1111-11-11",
+        "wikis_uploaded": [],
+        "wiki_history": [],
+        "pfp_filename": "asdf",
+        "about_me": "testing"
+    }
+
+    # Patch the update_bio method so we don't call GCS
+    with patch('flaskr.pages.current_user', User('fake_user')):
+        with patch('flaskr.backend.Backend.update_bio') as mock_update: 
+            mock_update.return_value = expected_dict
+
+            resp = client.post('/update', data={'bio': 'testing'})
+            assert resp.status_code == 200
+            assert b'Uploaded Successfully' in resp.data
+        
