@@ -443,9 +443,9 @@ def test_update_metadata_with_comments(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": []
     }
     backend.get_wiki_page = MagicMock(return_value=fake_page_metadata)
@@ -462,9 +462,9 @@ def test_update_metadata_with_comments(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }]
@@ -490,9 +490,9 @@ def test_update_metadata_with_comments_same_user(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }]
@@ -515,12 +515,10 @@ def test_update_metadata_with_comments_same_user(backend, fake_blob):
             "1999-10-12",
         "upvotes":
             0,
-        "who_upvoted":
-            None,
+        "who_upvoted": [],
         "downvotes":
             0,
-        "who_downvoted":
-            None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }, {
@@ -547,9 +545,9 @@ def test_update_metadata_with_multiple_comments(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }]
@@ -572,12 +570,10 @@ def test_update_metadata_with_multiple_comments(backend, fake_blob):
             "1999-10-12",
         "upvotes":
             0,
-        "who_upvoted":
-            None,
+        "who_upvoted": [],
         "downvotes":
             0,
-        "who_downvoted":
-            None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }, {

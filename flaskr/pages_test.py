@@ -83,7 +83,7 @@ def test_wiki_page(client):
     # Patch the get_wiki_page method so we don't call GCS
     with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
         mock_page.return_value = json.loads(
-            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": null, "downvotes": 0, "who_downvoted": null, "comments": []}'
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
         )
 
         resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
