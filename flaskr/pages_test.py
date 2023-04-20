@@ -91,20 +91,6 @@ def test_wiki_page(client):
         assert b"really_fake_content" in resp.data
 
 
-def fixit_test_login(client, test_user):
-    with patch('flaskr.backend.Backend.update_wikihistory'
-              ) as mock_update_wikihistory:
-        mock_update_wikihistory.return_value = None
-        mock_page.return_value = json.loads(
-            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
-        )
-
-        resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
-
-        assert resp.status_code == 200
-        assert b"really_fake_content" in resp.data
-
-
 def test_wiki_page_with_comments(client):
     '''  Test function to test the parameterised '/pages/<page_name>' route 
          when it has comments.
@@ -160,7 +146,6 @@ def test_logout(client):
 
     # login_user(User('fake_username'))
     response = client.get('/logout')
-    print(response.data)
     assert response.status_code == 302
     assert current_user.is_authenticated == False
 
