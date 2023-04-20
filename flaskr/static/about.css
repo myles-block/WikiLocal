@@ -4,7 +4,7 @@
     float: left;
     height: 500px;
     width: 300px;;
-    padding: 20px;
+    padding: 40px;
 }
 .column img {
     height: 500px;
@@ -15,9 +15,12 @@
     clear: both;
     display: table;
 }
-.about p{
+.column p{
     font-family: 'Roboto', sans-serif;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     line-height: 1.2;
     margin-top: 30px;
+}
+.column p:hover {
+    background-color: greenyellow;
 }
