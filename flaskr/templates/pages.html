@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="../static/pages.css" />
     </head>
     <h1> Places To Visit</h1>
+    <div class="search">    
         <h3> Search </h3>
         <form action='/search' method='post'>
             <div class="small fw-light">
@@ -16,6 +17,19 @@
                 </div>
             </div>
         </form>
+    </div>
+        <div class="sort"></div>
+            <h3 class='sorting'>Sort Pages By </h3>
+            <form action='/sort' method='post'>
+                <select class="form-select" aria-label="Default select example" name= "sort_option">
+                    <option  value="a_z">A TO Z</option>
+                    <option  value="z_a">Z TO A</option>
+                    <option  value="year">LATEST TO PREVIOUS</option>
+                </select>
+                <button type="submit" class="btn btn-primary">SORT</button>
+            </form>
+        </div>
+
         <div class="pages">
             <ul>
                 {% if places %}          
@@ -39,7 +53,9 @@
                 {% endif %}
             </ul>
         </div>
-        
-</body>
+    </div>
+    </form>
+
+   
 
 {% endblock %}

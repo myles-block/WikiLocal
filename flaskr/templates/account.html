@@ -1,6 +1,9 @@
 {% extends "main.html" %}
 {% block title %} {{current_user.username}} {% endblock %}
 {% block content %}
+<head>
+    <link rel="stylesheet" href="../static/account.css" />
+</head>
     <h1> Account Settings </h1>
 
     <p>Hi {{current_user.username}}!</p>

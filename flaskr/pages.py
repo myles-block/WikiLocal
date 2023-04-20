@@ -166,6 +166,21 @@ def make_endpoints(app, backend):
         else:
             return redirect('/pages.html', 200)
 
+    @app.route('/sort', methods=["GET", "POST"])
+    def sort():
+        ''' post the resulted pages from user option of sorting 
+            if resulted pages exist otherise redirect pages 
+
+        '''
+        if request.method == "POST":
+            user_option = request.form.get("sort_option")
+            required_pages = backend.sort_pages(user_option)
+            return render_template('pages.html',
+                                   places=required_pages,
+                                   sort_order=user_option)
+
+        return redirect('/pages.html')
+
     @app.route('/account', methods=['GET', 'POST'])
     def account():
         backend = Backend(user_bucket_name='wiki_login')

@@ -343,7 +343,6 @@ def test_search_by_title_query_in_title(backend):
     expected = [['Page 2', 1, 1]]
 
     assert result == expected
-
     backend.get_all_page_names.assert_called_once()
 
 
@@ -360,7 +359,6 @@ def test_search_by_title_no_query_in_title(backend):
     expected = []
 
     assert result == expected
-
     backend.get_all_page_names.assert_called_once()
 
 
@@ -396,6 +394,43 @@ def test_search_by_content_query_not_in_content(backend, mock_title_content):
     mock_title_content.assert_called_once()
 
 
+@pytest.fixture
+def mock_title_date():
+    '''  mocking title date method of the backend to inject in sort pages method
+
+        Args:
+            None
+    '''
+
+    with patch('flaskr.backend.Backend.title_date',
+               return_value={
+                   ('Page1', 0, 1): '2022-02-01',
+                   ('Title', 1, 0): '2021-01-01'
+               },
+               autospec=True) as mock_title_date:
+        yield mock_title_date
+
+
+@pytest.mark.parametrize('option,expected', [
+    ('a_z', [['Page1', 0, 1], ['Title', 1, 0]]),
+    ('z_a', [['Title', 1, 0], ['Page1', 0, 1]]),
+    ('year', [['Page1', 0, 1], ['Title', 1, 0]]),
+])
+def test_sort_pages(backend, option, expected, mock_title_date):
+    ''' Testing sort pages method 
+
+        Args: 
+            backend : mocked backend class
+            option : possible option user can choose define in parametrize 
+            expected : expected value for that option 
+            mock_title_date: mocked title_date method 
+    '''
+
+    result = backend.sort_pages(option)
+    assert result == expected
+    mock_title_date.assert_called_once()
+
+
 def test_update_metadata_with_comments(backend, fake_blob):
     ''' testing updating metadata with comments method 
 
@@ -408,9 +443,9 @@ def test_update_metadata_with_comments(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": []
     }
     backend.get_wiki_page = MagicMock(return_value=fake_page_metadata)
@@ -427,9 +462,9 @@ def test_update_metadata_with_comments(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }]
@@ -455,9 +490,9 @@ def test_update_metadata_with_comments_same_user(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }]
@@ -480,12 +515,10 @@ def test_update_metadata_with_comments_same_user(backend, fake_blob):
             "1999-10-12",
         "upvotes":
             0,
-        "who_upvoted":
-            None,
+        "who_upvoted": [],
         "downvotes":
             0,
-        "who_downvoted":
-            None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }, {
@@ -512,9 +545,9 @@ def test_update_metadata_with_multiple_comments(backend, fake_blob):
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
-        "who_upvoted": None,
+        "who_upvoted": [],
         "downvotes": 0,
-        "who_downvoted": None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }]
@@ -537,12 +570,10 @@ def test_update_metadata_with_multiple_comments(backend, fake_blob):
             "1999-10-12",
         "upvotes":
             0,
-        "who_upvoted":
-            None,
+        "who_upvoted": [],
         "downvotes":
             0,
-        "who_downvoted":
-            None,
+        "who_downvoted": [],
         "comments": [{
             "fake_user": "fake_user looks good"
         }, {
