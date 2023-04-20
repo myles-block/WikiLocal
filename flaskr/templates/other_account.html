@@ -1,6 +1,10 @@
 {% extends "main.html" %}
 {% block title %} {{username}} {% endblock %}
 {% block content %}
+<body>
+    <head>
+        <link rel="stylesheet" href="../static/account.css" />
+    </head>
     <h1>{{username}}</h1>
     <h4>Profile Photo </h4>
     {% if account_settings.pfp_filename %}
@@ -30,5 +34,5 @@
         {% endfor %}
     </ul>
     <!-- {{account_settings.wikis_uploaded}} -->
-    {{account_settings.about_me}}
+</body>
 {% endblock %}
