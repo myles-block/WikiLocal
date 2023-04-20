@@ -35,3 +35,15 @@ body {
   .pages ul li a:hover {
     text-decoration: underline;
   }
+.sort h3 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+
+}
+.search h3 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+
+}
