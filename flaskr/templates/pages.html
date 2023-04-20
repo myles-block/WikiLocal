@@ -29,9 +29,10 @@
             </select>
             <button type="submit" class="btn btn-primary">SORT</button>
         </form>
+        <h3>Filter Pages By </h3>
         <form action='/sortyears' method='post'>
             <select class="form-select" aria-label="Default select example" name= "list_years">
-                {% for year in list_years %}
+                {% for year in range(1900, 2024) %}
                     <option value="{{year}}" SELECTED>{{year}}</option>
                 {% endfor %}
             </select>

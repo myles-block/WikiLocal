@@ -32,8 +32,7 @@ def make_endpoints(app,backend):
     def pages():
 
         page_names = backend.get_all_page_names()
-        list_years = backend.get_all_years()
-        return render_template('pages.html', places=page_names, list_years=list_years)
+        return render_template('pages.html', places=page_names)
 
     @app.route('/about')
     def about():
@@ -81,8 +80,6 @@ def make_endpoints(app,backend):
                                        request.form['password'])
                 login_user(user)
                 return redirect('/')
-                # msg = "Successfully Completed!!! Now Sign In!!!"
-                # return render_template('signup.html', message = msg)
             else:
                 msg = "This username already exists! Pick a new one!"
                 return render_template('signup.html', message=msg)
@@ -169,10 +166,9 @@ def make_endpoints(app,backend):
     @app.route('/sortyears', methods =["GET" ,"POST"])
     def sort_by_year():
         if request.method == "POST":
-            list_years = backend.get_all_years()
             user_option = request.form.get("list_years")
-            required_pages = backend.filter_by_year(user_option)
-            return render_template('pages.html' , places = required_pages , sort_order=user_option, list_years=list_years)
+            required_pages = backend.filter_by_year(str(user_option))
+            return render_template('pages.html' , places = required_pages , sort_order=user_option)
 
         return redirect('/pages.html')
 
