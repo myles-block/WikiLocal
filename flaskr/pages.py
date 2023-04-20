@@ -32,7 +32,8 @@ def make_endpoints(app,backend):
     def pages():
 
         page_names = backend.get_all_page_names()
-        return render_template('pages.html', places=page_names)
+        list_years = backend.get_all_years()
+        return render_template('pages.html', places=page_names, list_years=list_years)
 
     @app.route('/about')
     def about():
@@ -147,14 +148,7 @@ def make_endpoints(app,backend):
                     return render_template('pages.html',places = resulted_pages)
                 else:
                     message = f"No such pages found with '{search_query}' in the content "
-                    return render_template('pages.html',message = message )
-            elif search_by == 'year':
-                resulted_pages = backend.filter_by_year(search_query)
-                if len(resulted_pages) > 0:
-                    return render_template('pages.html',places = resulted_pages)
-                else:
-                    message = f"No such pages found with '{search_query}' as year "
-                    return render_template('pages.html',message = message )                 
+                    return render_template('pages.html',message = message )              
         else:
             return redirect('/pages.html',200)
     
@@ -169,6 +163,16 @@ def make_endpoints(app,backend):
             required_pages = backend.sort_pages(user_option)
     
             return render_template('pages.html' , places = required_pages , sort_order=user_option)
+
+        return redirect('/pages.html')
+
+    @app.route('/sortyears', methods =["GET" ,"POST"])
+    def sort_by_year():
+        if request.method == "POST":
+            list_years = backend.get_all_years()
+            user_option = request.form.get("list_years")
+            required_pages = backend.filter_by_year(user_option)
+            return render_template('pages.html' , places = required_pages , sort_order=user_option, list_years=list_years)
 
         return redirect('/pages.html')
 

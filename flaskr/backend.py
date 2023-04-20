@@ -294,27 +294,22 @@ class Backend:
         final_results = []
         for wiki in page_date_created:
             date = page_date_created[wiki]
-            if date[0:4] == input_date:
+            year = datetime.strptime(date, '%Y-%m-%d').year
+            if str(year) == input_date:
                 final_results.append(wiki)
         return final_results
+
+    def get_all_years(self):
+        ''' Returns array of all years of wikipage,
+            '''
+        page_date_created = self.title_date()
+        final_results_sets = set()
+        for wiki in page_date_created:
+            date = page_date_created[wiki]
+            year = datetime.strptime(date, '%Y-%m-%d').year
+            final_results_sets.add(str(year))
+        final_results = list(final_results_sets)
+        print(final_results)
+        return final_results
+
         
-        
-
-            
-
-
-            
-            
-
-
-
-
-
-
-
-        
-
-
-# backend = Backend()
-# print(backend.sort_pages('z_a'))
-# print(backend.get_wiki_page('Apple Carniege Library.txt'))

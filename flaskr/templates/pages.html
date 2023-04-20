@@ -14,7 +14,6 @@
             <input class="form-control border rounded-pill" type="text" name='search_query' title='Search' placeholder="search by title or content or year"  id="example-search-input">
             <button type="submit" class="btn btn-secondary" name="search_by" value = 'title'>BY TITLE</button>
             <button type="submit" class="btn btn-secondary" name = "search_by" value='content'>BY CONTENT</button>
-            <button type="submit" class="btn btn-secondary" name = "search_by" value='year'>BY YEAR</button>
         </div>
     </div>
     </form>
@@ -30,6 +29,15 @@
             </select>
             <button type="submit" class="btn btn-primary">SORT</button>
         </form>
+        <form action='/sortyears' method='post'>
+            <select class="form-select" aria-label="Default select example" name= "list_years">
+                {% for year in list_years %}
+                    <option value="{{year}}" SELECTED>{{year}}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">SORT</button>
+        </form>
+        
     </div>
     <div class="pages">
         <ul>            
