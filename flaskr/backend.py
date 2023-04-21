@@ -157,15 +157,15 @@ class Backend:
          username : user created username 
          password : user created password
          '''
-        # Hashes username and password with salt
-        salted = f"{username}{'gamma'}{password}"
-        hashed = hashlib.md5(salted.encode())
 
         # Checks if blob exist with username and raise error if it does
         blob = self.user_bucket.get_blob(username)
         if blob is not None:
-            # raise ValueError((f"{username} already exists!"))
-            return None
+            raise ValueError((f"{username} already exists!"))
+
+        # Hashes username and password with salt
+        salted = f"{username}{'gamma'}{password}"
+        hashed = hashlib.md5(salted.encode())
 
         # Creates blob with username
         blob = self.user_bucket.blob(username)
@@ -199,8 +199,6 @@ class Backend:
             # Get its content as a dictionary using the JSON API and returns none if doesn't exist
             account_data = json.loads((blob.download_as_string()),
                                       parse_constant=None)
-            if not account_data:
-                return None
 
             salted = f"{username}{'gamma'}{password}"
             hashed_password = hashlib.md5(salted.encode()).hexdigest()
@@ -208,7 +206,8 @@ class Backend:
             # Takes password from GCS JSON
             if hashed_password == account_data['hashed_password']:
                 return User(username)
-        return None
+            raise ValueError(("Incorrect Password"))
+        raise ValueError(("User doesn't exists!"))
 
     def get_image(self, image_name, bucket_name):  # 2
         ''' Gets an image from the content bucket.
@@ -420,10 +419,6 @@ class Backend:
         account_data = json.loads((blob.download_as_string()),
                                   parse_constant=None)
 
-        # If doesn't exist, return none
-        if not account_data:
-            return None
-
         return account_data
 
     def update_wikiupload(self, username, fileuploaded):
@@ -449,6 +444,8 @@ class Backend:
         '''
         blob = self.user_bucket.blob(username)
 
+        max_history = 100
+
         # Get the current wiki_page's json file as a dictionary
         user_metadata = Backend.get_user_account(self, username)
 
@@ -457,7 +454,7 @@ class Backend:
         if file_viewed in wiki_history_array:
             index = wiki_history_array.index(file_viewed)
             wiki_history_array.pop(index)
-        elif len(wiki_history_array) >= 10:
+        elif len(wiki_history_array) >= max_history:
             wiki_history_array.pop(0)
 
         # Adds new viewed wiki to history

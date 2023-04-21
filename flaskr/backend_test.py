@@ -256,13 +256,14 @@ def test_failed_sign_up(backend, fake_blob):
     fake_password = 'fake password'
 
     # sets .get_blob to return "something" instead of None
-    backend.user_bucket.get_blob.return_value = "something"
-    result = backend.sign_up(fake_username, fake_password)
+    with pytest.raises(ValueError) as v:
+        backend.user_bucket.get_blob.return_value = "something"
+        result = backend.sign_up(fake_username, fake_password)
 
-    # checks that it is None and asserts the calls
-    assert result == None
-    backend.user_bucket.get_blob.assert_called_once()
-    backend.user_bucket.get_blob.assert_called_once_with(fake_username)
+        # checks that it is an error and asserts the calls
+        assert str(v.value) == fake_username + " already exists!"
+        backend.user_bucket.get_blob.assert_called_once()
+        backend.user_bucket.get_blob.assert_called_once_with(fake_username)
 
 
 def test_sign_in_user_exist(backend, fake_blob):
@@ -306,18 +307,19 @@ def test_sign_in_user_doesnot_exists(backend, fake_blob):
     fake_salted = f"{fake_username}{'gamma'}{fake_password}"
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
-    # checking  blob exits in the bucket or not #
-    with patch('google.cloud.storage.Blob.exists') as mock_exists:
-        mock_exists.return_value = False  # if blob doesnot exist
+    with pytest.raises(ValueError) as v:
+        # checking  blob exits in the bucket or not #
+        with patch('google.cloud.storage.Blob.exists') as mock_exists:
+            mock_exists.return_value = False  # if blob doesnot exist
 
-        # calling the backend method sign_in
-        result = backend.sign_in(fake_username, fake_password)
+            # calling the backend method sign_in
+            result = backend.sign_in(fake_username, fake_password)
 
-        # checking the result
-        assert result is None
+            # checking the result
+            assert str(v.value) == "User doesn't exists!"
 
-    # checking exists was called
-    mock_exists.assert_called_once()
+        # checking exists was called
+        mock_exists.assert_called_once()
 
 
 def test_title_content_non_empty(backend):
@@ -994,32 +996,36 @@ def test_update_wikihistory_autoadjust(backend, fake_blob):
     fake_username = 'fake username'
     file_viewed = 'filename11'
 
+    big_array = []
+    for int in range(0, 100):
+        name = "wikiname " + str(int)
+        big_array.append(name)
+
+    final_array = []
+    for int in range(1, 100):
+        name = "wikiname " + str(int)
+        final_array.append(name)
+    final_array.append("filename11")
+
     # creates return value from get_user_account method
     getter = {
         "hashed_password": "fake",
         "account_creation": "1111-11-11",
         "wikis_uploaded": [],
-        "wiki_history": [
-            "filename", "filename2", "filename3", "filename4", "filename5",
-            "filename6", "filename7", "filename8", "filename9", "filename 10"
-        ],
+        "wiki_history": big_array,
         "pfp_filename": None,
         "about_me": ""
     }
-
     # injects return value into get_user_account
     with patch.object(Backend, 'get_user_account',
                       return_value=getter) as mock_method:
         # expected dictionary of what it should be when you view a wiki
+
         expected_dict = {
             "hashed_password": "fake",
             "account_creation": "1111-11-11",
             "wikis_uploaded": [],
-            "wiki_history": [
-                "filename2", "filename3", "filename4", "filename5", "filename6",
-                "filename7", "filename8", "filename9", "filename 10",
-                "filename11"
-            ],
+            "wiki_history": final_array,
             "pfp_filename": None,
             "about_me": ""
         }
