@@ -222,14 +222,12 @@ def make_endpoints(app, backend):
 
     @app.route('/update', methods=['GET', 'POST'])
     def update():
-        #alter upload settings
         if request.method == 'POST':
             if request.form['bio']:
                 backend = Backend(user_bucket_name='wiki_login')
                 backend.update_bio(current_user.username, request.form['bio'])
                 message = 'Uploaded Successfully'
                 return render_template('update.html', bio_message=message)
-            # Handles adding an image
         return render_template('update.html')
 
     @app.route('/updatePFP', methods=['GET', 'POST'])
