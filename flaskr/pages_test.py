@@ -567,6 +567,63 @@ def test_wiki_page_downvotes(client):
                     assert resp.status_code == 302
 
 
+def test_update_bio(client):
+    ''' Testing the update pfp route
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    expected_dict = {
+        "hashed_password": "fake",
+        "account_creation": "1111-11-11",
+        "wikis_uploaded": [],
+        "wiki_history": [],
+        "pfp_filename": "asdf",
+        "about_me": "testing"
+    }
+
+    # Patch the update_bio method so we don't call GCS
+    with patch('flaskr.pages.current_user', User('fake_user')):
+        with patch('flaskr.backend.Backend.update_bio') as mock_update:
+            mock_update.return_value = expected_dict
+
+            resp = client.post('/update', data={'bio': 'testing'})
+            assert resp.status_code == 200
+            assert b'Uploaded Successfully' in resp.data
+
+
+def test_user_account(client):
+    ''' Testing the account parameterised route for a user profile.
+         Args : 
+            client : Flask Client Object 
+    '''
+
+    # Patch the get_user_account method.
+    with patch('flaskr.pages.current_user', User('fake_user')) as mock_user:
+        mock_user.is_authenticated = True
+        with patch('flaskr.backend.Backend.get_user_account') as mock_get_user:
+
+            mock_get_user.return_value = {
+                'hashed_password': "whatever_pasword",
+                'account_creation': "anydate",
+                'wikis_uploaded': [],
+                'wiki_history': ["wikiview1", "wikiview2", "wikiview3"],
+                'pfp_filename': None,
+                'about_me': 'some funny info about me',
+            }
+
+            resp = client.get('/account')
+
+            # Assert the request succeeds and the user info and username are reflected.
+            assert resp.status_code == 200
+            assert b"Account Settings" in resp.data
+            assert mock_user.username == 'fake_user'
+            assert b"some funny info about me" in resp.data
+            assert b"wikiview1" in resp.data
+            assert b"wikiview2" in resp.data
+            assert b"wikiview3" in resp.data
+
+
 def test_sort_years(client):
     ''' Testing the filter by year rout
          Args : 
