@@ -158,7 +158,7 @@ class Backend:
          password : user created password
          '''
 
-         # Checks if blob exist with username and raise error if it does
+        # Checks if blob exist with username and raise error if it does
         blob = self.user_bucket.get_blob(username)
         if blob is not None:
             raise ValueError((f"{username} already exists!"))
@@ -166,7 +166,6 @@ class Backend:
         # Hashes username and password with salt
         salted = f"{username}{'gamma'}{password}"
         hashed = hashlib.md5(salted.encode())
-
 
         # Creates blob with username
         blob = self.user_bucket.blob(username)

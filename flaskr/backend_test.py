@@ -997,7 +997,7 @@ def test_update_wikihistory_autoadjust(backend, fake_blob):
     file_viewed = 'filename11'
 
     big_array = []
-    for int in range (0, 100):
+    for int in range(0, 100):
         name = "wikiname " + str(int)
         big_array.append(name)
 
@@ -1018,10 +1018,9 @@ def test_update_wikihistory_autoadjust(backend, fake_blob):
     }
     # injects return value into get_user_account
     with patch.object(Backend, 'get_user_account',
-                    return_value=getter) as mock_method:
+                      return_value=getter) as mock_method:
         # expected dictionary of what it should be when you view a wiki
 
-        
         expected_dict = {
             "hashed_password": "fake",
             "account_creation": "1111-11-11",
