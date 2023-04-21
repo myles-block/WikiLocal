@@ -256,14 +256,13 @@ def test_failed_sign_up(backend, fake_blob):
     fake_password = 'fake password'
 
     # sets .get_blob to return "something" instead of None
-    with pytest.raises(ValueError) as v:
-        backend.user_bucket.get_blob.return_value = "something"
-        result = backend.sign_up(fake_username, fake_password)
+    backend.user_bucket.get_blob.return_value = "something"
+    result = backend.sign_up(fake_username, fake_password)
 
-        # checks that it is an error and asserts the calls
-        assert str(v.value) == fake_username + " already exists!"
-        backend.user_bucket.get_blob.assert_called_once()
-        backend.user_bucket.get_blob.assert_called_once_with(fake_username)
+    # checks that it is an error and asserts the calls
+    assert result == None
+    backend.user_bucket.get_blob.assert_called_once()
+    backend.user_bucket.get_blob.assert_called_once_with(fake_username)
 
 
 def test_sign_in_user_exist(backend, fake_blob):
@@ -307,19 +306,19 @@ def test_sign_in_user_doesnot_exists(backend, fake_blob):
     fake_salted = f"{fake_username}{'gamma'}{fake_password}"
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
-    with pytest.raises(ValueError) as v:
-        # checking  blob exits in the bucket or not #
-        with patch('google.cloud.storage.Blob.exists') as mock_exists:
-            mock_exists.return_value = False  # if blob doesnot exist
 
-            # calling the backend method sign_in
-            result = backend.sign_in(fake_username, fake_password)
+    # checking  blob exits in the bucket or not #
+    with patch('google.cloud.storage.Blob.exists') as mock_exists:
+        mock_exists.return_value = False  # if blob doesnot exist
 
-            # checking the result
-            assert str(v.value) == "User doesn't exists!"
+        # calling the backend method sign_in
+        result = backend.sign_in(fake_username, fake_password)
 
-        # checking exists was called
-        mock_exists.assert_called_once()
+        # checking the result
+        assert result == None
+
+    # checking exists was called
+    mock_exists.assert_called_once()
 
 
 def test_title_content_non_empty(backend):
