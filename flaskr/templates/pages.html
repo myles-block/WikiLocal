@@ -18,7 +18,8 @@
             </div>
         </form>
     </div>
-        <div class="sort"></div>
+    <div class="sort-filter">    
+        <div class="sort">
             <h3 class='sorting'>Sort Pages By </h3>
             <form action='/sort' method='post'>
                 <select class="form-select" aria-label="Default select example" name= "sort_option">
@@ -39,7 +40,8 @@
                 </select>
                 <button type="submit" class="btn btn-primary">SORT</button>
             </form>
-        </div>        
+        </div>  
+    </div>      
         <div class="pages">
             <ul>
                 {% if places %}          

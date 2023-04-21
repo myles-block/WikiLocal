@@ -33,7 +33,7 @@ def client(app):
 def test_home_page(client):
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"Welcome To Our Wiki-fun in your local\n" in resp.data
+    assert b"Welcome TO The Wiki Of Fun Local Places!" in resp.data
 
 
 # TODO(Project 1): Write tests for other routes.
@@ -115,7 +115,6 @@ def test_login(client):
     # Send a response to the route trying to verify for the test user.
     with patch('flaskr.backend.Backend.sign_in') as mock_login:
         mock_login.return_value = User('fake_username')
-        # print(Backend.sign_in())
         response = client.post('/login',
                                data={
                                    'username': 'fake_username',
