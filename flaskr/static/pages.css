@@ -1,9 +1,7 @@
-
 body {
     background-color: #d7cfcf; /* replace with the color you want */
   }
-
-
+  
   .btn btn-secondary{
     font-family: 'Roboto', sans-serif;
     font-size: 1.1rem;
@@ -14,12 +12,12 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 1.1rem;
     line-height: 1.2;
-    margin-top: 30px;
+    margin-top: 12px;
   }
   
   .pages ul {
     list-style: disc;
-    margin: 14px;
+    margin: 12px;
     padding: 15px;
   }
   
@@ -35,3 +33,16 @@ body {
   .pages ul li a:hover {
     text-decoration: underline;
   }
+  
+.sort h3 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+
+}
+.search h3 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+
+}

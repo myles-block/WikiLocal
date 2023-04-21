@@ -82,17 +82,13 @@ def test_wiki_page(client):
 
     # Patch the get_wiki_page method so we don't call GCS
     with patch('flaskr.backend.Backend.get_wiki_page') as mock_page:
-        with patch('flaskr.backend.Backend.update_wikihistory'
-                  ) as mock_update_wikihistory:
-            mock_update_wikihistory.return_value = None
-            mock_page.return_value = json.loads(
-                '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
-            )
+        mock_page.return_value = json.loads(
+            '{"wiki_page": "really_fake_page", "content": "really_fake_content", "date_created": "0000-00-00", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}'
+        )
 
-            resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
-
-            assert resp.status_code == 200
-            assert b"really_fake_content" in resp.data
+        resp = client.get('/pages/GeorgeTown%20Waterfront%20Park')
+        assert resp.status_code == 200
+        assert b"really_fake_content" in resp.data
 
 
 def test_wiki_page_with_comments(client):
@@ -150,7 +146,6 @@ def test_logout(client):
 
     # login_user(User('fake_username'))
     response = client.get('/logout')
-    print(response.data)
     assert response.status_code == 302
     assert current_user.is_authenticated == False
 
@@ -361,6 +356,71 @@ def test_search_for_content_with_no_result(client):
             assert b'No such pages found with' in response.data
 
 
+def test_sort_route_for_option1(client):
+    ''' Testing the sort route  for desired sorted results for option1 : a_z
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {
+            ('Page1', 0, 1): '2020-03-01',
+            ('Title', 1, 0): '2021-03-01'
+        }
+
+        with patch('flaskr.backend.Backend.sort_pages') as mock_search:
+
+            mock_search.return_value = [['Page1', 0, 1], ['Title', 1, 0]]
+            response = client.post('/sort', data={'sort_option': 'a_z'})
+
+            assert response.status_code == 200
+            assert b'Page1' in response.data
+            assert b'Title' in response.data
+
+
+def test_sort_route_for_option2(client):
+    ''' Testing the sort route  for desired sorted results for option2 : z_a
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {
+            ('Page1', 0, 1): '2020-03-01',
+            ('Title', 1, 0): '2021-03-01'
+        }
+        with patch('flaskr.backend.Backend.sort_pages') as mock_search:
+
+            mock_search.return_value = [['Title', 1, 0], ['Page1', 0, 1]]
+            response = client.post('/sort', data={'sort_option': 'z_a'})
+
+            assert response.status_code == 200
+            assert b'Title' in response.data
+            assert b'Page1' in response.data
+
+
+def test_sort_route_for_option3(client):
+    ''' Testing the sort route  for desired sorted results for option3 : year -> latest to previous
+
+        Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {
+            ('Page1', 0, 1): '2020-03-01',
+            ('Title', 1, 0): '2021-03-01'
+        }
+
+        with patch('flaskr.backend.Backend.sort_pages') as mock_search:
+
+            mock_search.return_value = [['Title', 1, 0], ['Page1', 0, 1]]
+            response = client.post('/sort', data={'sort_option': 'year'})
+
+            assert response.status_code == 200
+            assert b'Title' in response.data
+            assert b'Page1' in response.data
+
+
 def test_page_commenting(client):
     '''  Testing the post comment in page route with patching dependencies 
           get_wiki_page , update_metadata_with_comments , current_user , update_wikihistory
@@ -506,12 +566,13 @@ def test_wiki_page_downvotes(client):
                     # Assert the request succeeds and the vote count is reflected.
                     assert resp.status_code == 302
 
+
 def test_update_bio(client):
     ''' Testing the update pfp route
          Args : 
             client : Flask Client Object 
     '''
-    
+
     expected_dict = {
         "hashed_password": "fake",
         "account_creation": "1111-11-11",
@@ -523,12 +584,13 @@ def test_update_bio(client):
 
     # Patch the update_bio method so we don't call GCS
     with patch('flaskr.pages.current_user', User('fake_user')):
-        with patch('flaskr.backend.Backend.update_bio') as mock_update: 
+        with patch('flaskr.backend.Backend.update_bio') as mock_update:
             mock_update.return_value = expected_dict
 
             resp = client.post('/update', data={'bio': 'testing'})
             assert resp.status_code == 200
             assert b'Uploaded Successfully' in resp.data
+
 
 def test_user_account(client):
     ''' Testing the account parameterised route for a user profile.
@@ -556,8 +618,29 @@ def test_user_account(client):
             assert resp.status_code == 200
             assert b"Account Settings" in resp.data
             assert mock_user.username == 'fake_user'
-            # assert b'Hi fake_user!' in resp.data
             assert b"some funny info about me" in resp.data
             assert b"wikiview1" in resp.data
             assert b"wikiview2" in resp.data
             assert b"wikiview3" in resp.data
+
+
+def test_sort_years(client):
+    ''' Testing the filter by year rout
+         Args : 
+            client : Flask Client Object 
+    '''
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {
+            ('wikipage1', 0, 1): '2021-03-01',
+            ('wikipage2', 1, 0): '2021-03-01'
+        }
+        with patch(
+                "flaskr.backend.Backend.filter_by_year") as mock_filter_by_year:
+            mock_filter_by_year.return_value = [('wikipage1', 0, 1),
+                                                ('wikipage2', 1, 0)]
+
+            resp = client.post('/sortyears', data={'list_years': '2021'})
+
+            assert resp.status_code == 200
+            assert b'wikipage1' in resp.data
+            assert b'wikipage2' in resp.data

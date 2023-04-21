@@ -92,7 +92,7 @@ class Backend:
         self.info_bucket = self.storage_client.bucket(info_bucket_name)
         self.user_bucket = self.storage_client.bucket(user_bucket_name)
 
-    def get_wiki_page(self, name):  # 1
+    def get_wiki_page(self, name):
         ''' Gets an uploaded page's metadata information from the content bucket as a dictionary.
             name : Name of the wiki page to be found and retrieved.
            '''
@@ -227,7 +227,6 @@ class Backend:
         except FileNotFoundError:  #handling the not existing file
             raise ValueError('Image Name does not exist in the bucket')
 
-    #helper function
     def title_content(self):
         ''' return dictionary with the page name , upvote , downvote in tuple as key and it's content in value if exists
             Otherwise , returns an empty dictionary 
@@ -278,6 +277,65 @@ class Backend:
         for page, page_content in pages_contents.items():
             if query.lower() in page_content.lower():
                 final_results.append(list(page))
+        return final_results
+
+    def title_date(self):
+        ''' Returns dictionary with tuple containing page name , upvote and downvote as key and date_created as value
+            if no any page exists , returns an empty dictionary
+            Example : page_exist->[{('wikipage',0,1) : '2022-01-03'}]
+
+            Args:
+                None 
+        '''
+        pages_dates_created = {}
+        all_page_names = self.get_all_page_names()
+        for page in all_page_names:
+            if tuple(page) not in pages_dates_created:
+                page_metadata = self.get_wiki_page(page[0] + '.txt')
+                pages_dates_created[tuple(page)] = page_metadata['date_created']
+        return pages_dates_created
+
+    def sort_pages(self, user_option):
+        ''' Returns list of list with page name , upvote and downvote  by sorting them according to the user_option 
+            Args : 
+                user_option : option choosen by user 
+                possible options : Option 1 -> A TO Z 
+                                   Option 2 -> Z TO A 
+                                   Option 3 -> Latest To Previous 
+        '''
+        page_date_created = self.title_date()
+        if user_option == 'a_z':
+            sorted_pages = sorted(page_date_created, key=lambda x: x[0])
+        elif user_option == 'z_a':
+            sorted_pages = sorted(page_date_created,
+                                  key=lambda x: x[0],
+                                  reverse=True)
+        elif user_option == 'year':
+            sorted_pages = sorted(page_date_created,
+                                  key=lambda x: page_date_created[x],
+                                  reverse=True)
+        else:
+            return []
+        final_results = []
+        for key in sorted_pages:
+            final_results.append(list(key))
+        return final_results
+
+    def filter_by_year(self, input_date):
+        ''' Returns wiki pages with the proper content,
+            Ex: [[wiki_page1], [wiki_page2]]
+            
+            Args:
+                date : date chosen by user
+        '''
+        page_date_created = self.title_date()
+        print(page_date_created)
+        final_results = []
+        for wiki in page_date_created:
+            date = page_date_created[wiki]
+            year = datetime.strptime(date, '%Y-%m-%d').year
+            if str(year) == input_date:
+                final_results.append(wiki)
         return final_results
 
     def update_metadata_with_comments(self, page_name, current_user,
