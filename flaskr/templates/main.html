@@ -5,24 +5,9 @@
 {% block style %}
     <head>
         <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        <title>Welcome To The Team Gamma Projects</title>
-        <stlye>
 
-        </stlye>
+        <title> Welcome To The Team Gamma Projects</title>
     </head>
-
-    <style>
-        nav li {
-        display: inline-block;
-        margin: 12px;
-        list-style-type: None;
-        font-family: 'Roboto', sans-serif;
-        font-size: 1.1rem;
-        line-height: 1.2;
-        margin-top: 30px;
-
-        }
-    </style>
 {% endblock %}
 </head>
 
@@ -46,12 +31,19 @@
         <li><a href="/signup">Sign Up</a></li>
         {% endif %}
     </nav>
-    <div>       
-        <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        {% block content %}
-        {{ greetings }}
-        {% endblock %}
-    </div>
+    {% block content %}
+        <div class='greet'>       
+            <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
+            {{ greetings }}
+        </div>
+        <div class="parag">
+            <p> Here , You can find about places across the US <br>that you may have not heard before <br>
+                but are definitely a must-visit !</p>
+            <p> Know of a place only only locals are familiar?<br>
+                Create an account and share it with the rest of the community </p>
+        </div>
+    {% endblock %}
+
 
 </body>
 

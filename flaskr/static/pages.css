@@ -46,3 +46,12 @@ body {
     line-height: 1.2;
 
 }
+
+.sort-filter{
+    display: flex !important;
+}
+
+.sort {
+    margin-right: 80px;
+}
+
