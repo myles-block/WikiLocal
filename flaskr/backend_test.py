@@ -1174,7 +1174,6 @@ def test_filter_by_year(backend, fake_blob):
     with patch('flaskr.backend.Backend.title_date') as mock_title_date:
         mock_title_date.return_value = {
             ('wikipage1',0,1) : '2022-01-03', ('wikipage2',0,1) : '2023-01-04', ('wikipage3',0,1) : '2024-01-05', ('wikipage4',0,1) : '2024-01-08'}
-        # with patch('datetime.strptime') as mock_strip_time:
 
         given_year = "2024"
         expected = [('wikipage3',0,1), ('wikipage4',0,1)]
@@ -1182,3 +1181,4 @@ def test_filter_by_year(backend, fake_blob):
 
         assert result == expected
         backend.title_date.assert_called_once()
+
