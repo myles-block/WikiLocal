@@ -306,7 +306,6 @@ def test_sign_in_user_doesnot_exists(backend, fake_blob):
     fake_salted = f"{fake_username}{'gamma'}{fake_password}"
     fake_hashed_password = hashlib.md5(fake_salted.encode()).hexdigest()
 
-
     # checking  blob exits in the bucket or not #
     with patch('google.cloud.storage.Blob.exists') as mock_exists:
         mock_exists.return_value = False  # if blob doesnot exist
