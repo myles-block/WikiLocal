@@ -1,9 +1,7 @@
-
 body {
     background-color: #d7cfcf; /* replace with the color you want */
   }
-
-
+  
   .btn btn-secondary{
     font-family: 'Roboto', sans-serif;
     font-size: 1.1rem;
@@ -35,6 +33,7 @@ body {
   .pages ul li a:hover {
     text-decoration: underline;
   }
+  
 .sort h3 {
     font-family: 'Roboto', sans-serif;
     font-size: 1.1rem;

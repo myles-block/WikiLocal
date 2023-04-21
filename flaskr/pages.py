@@ -181,6 +181,17 @@ def make_endpoints(app, backend):
 
         return redirect('/pages.html')
 
+    @app.route('/sortyears', methods=["GET", "POST"])
+    def sort_by_year():
+        if request.method == "POST":
+            user_option = request.form.get("list_years")
+            required_pages = backend.filter_by_year(str(user_option))
+            return render_template('pages.html',
+                                   places=required_pages,
+                                   sort_order=user_option)
+
+        return redirect('/pages.html')
+
     @app.route('/account', methods=['GET', 'POST'])
     def account():
         backend = Backend(user_bucket_name='wiki_login')
@@ -213,14 +224,12 @@ def make_endpoints(app, backend):
 
     @app.route('/update', methods=['GET', 'POST'])
     def update():
-        #alter upload settings
         if request.method == 'POST':
             if request.form['bio']:
                 backend = Backend(user_bucket_name='wiki_login')
                 backend.update_bio(current_user.username, request.form['bio'])
                 message = 'Uploaded Successfully'
                 return render_template('update.html', bio_message=message)
-            # Handles adding an image
         return render_template('update.html')
 
     @app.route('/updatePFP', methods=['GET', 'POST'])

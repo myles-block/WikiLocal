@@ -316,10 +316,26 @@ class Backend:
                                   reverse=True)
         else:
             return []
-
         final_results = []
         for key in sorted_pages:
             final_results.append(list(key))
+        return final_results
+
+    def filter_by_year(self, input_date):
+        ''' Returns wiki pages with the proper content,
+            Ex: [[wiki_page1], [wiki_page2]]
+            
+            Args:
+                date : date chosen by user
+        '''
+        page_date_created = self.title_date()
+        print(page_date_created)
+        final_results = []
+        for wiki in page_date_created:
+            date = page_date_created[wiki]
+            year = datetime.strptime(date, '%Y-%m-%d').year
+            if str(year) == input_date:
+                final_results.append(wiki)
         return final_results
 
     def update_metadata_with_comments(self, page_name, current_user,
