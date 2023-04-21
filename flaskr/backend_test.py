@@ -7,6 +7,7 @@ import hashlib
 import json
 import io
 from freezegun import freeze_time
+from datetime import datetime
 
 
 # TODO(Project 1): Write tests for Backend methods.
@@ -1263,3 +1264,20 @@ def test_update_pfp_with_existence(backend, fake_blob):
             fake_blob.upload_from_string.assert_called_once()
             fake_blob.upload_from_string.assert_called_once_with(
                 json.dumps(expected_dict), content_type='application/json')
+
+
+def test_filter_by_year(backend, fake_blob):
+    with patch('flaskr.backend.Backend.title_date') as mock_title_date:
+        mock_title_date.return_value = {
+            ('wikipage1', 0, 1): '2022-01-03',
+            ('wikipage2', 0, 1): '2023-01-04',
+            ('wikipage3', 0, 1): '2024-01-05',
+            ('wikipage4', 0, 1): '2024-01-08'
+        }
+
+        given_year = "2024"
+        expected = [('wikipage3', 0, 1), ('wikipage4', 0, 1)]
+        result = backend.filter_by_year(given_year)
+
+        assert result == expected
+        backend.title_date.assert_called_once()
