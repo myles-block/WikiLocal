@@ -320,7 +320,7 @@ class Backend:
         for key in sorted_pages:
             final_results.append(list(key))
         return final_results
-    
+
     def filter_by_year(self, input_date):
         ''' Returns wiki pages with the proper content,
             Ex: [[wiki_page1], [wiki_page2]]

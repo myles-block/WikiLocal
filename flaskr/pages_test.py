@@ -566,6 +566,7 @@ def test_wiki_page_downvotes(client):
                     # Assert the request succeeds and the vote count is reflected.
                     assert resp.status_code == 302
 
+
 def test_sort_years(client):
     ''' Testing the filter by year rout
          Args : 
@@ -576,8 +577,10 @@ def test_sort_years(client):
             ('wikipage1', 0, 1): '2021-03-01',
             ('wikipage2', 1, 0): '2021-03-01'
         }
-        with patch("flaskr.backend.Backend.filter_by_year") as mock_filter_by_year:
-            mock_filter_by_year.return_value = [('wikipage1', 0, 1), ('wikipage2', 1, 0)]
+        with patch(
+                "flaskr.backend.Backend.filter_by_year") as mock_filter_by_year:
+            mock_filter_by_year.return_value = [('wikipage1', 0, 1),
+                                                ('wikipage2', 1, 0)]
 
             resp = client.post('/sortyears', data={'list_years': '2021'})
 

@@ -181,12 +181,14 @@ def make_endpoints(app, backend):
 
         return redirect('/pages.html')
 
-    @app.route('/sortyears', methods =["GET" ,"POST"])
+    @app.route('/sortyears', methods=["GET", "POST"])
     def sort_by_year():
         if request.method == "POST":
             user_option = request.form.get("list_years")
             required_pages = backend.filter_by_year(str(user_option))
-            return render_template('pages.html' , places = required_pages , sort_order=user_option)
+            return render_template('pages.html',
+                                   places=required_pages,
+                                   sort_order=user_option)
 
         return redirect('/pages.html')
 
