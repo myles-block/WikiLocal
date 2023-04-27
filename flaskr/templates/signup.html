@@ -4,14 +4,30 @@
 Sign Up
 {% endblock %}
 
+{% block javascript %}
+    
+{% endblock %}
+
 {% block content %}
 <h3>Sign Up</h3>
 
 <form method="post" action="/signup">
-    <!-- <p>Username</p> -->
-    <input type="text" name="username" placeholder="Username" required/>
-    <!-- <p>Password</p> -->
-    <input type="text" name="password" placeholder="Password" required/>
+    <p>Username</p>
+    <input type="text" name="username" placeholder="Username" required/><br>
+    <p>Password</p>
+    <input type="password" name="password" placeholder="Password" id= "myInput" required/><br>
+    <script>
+        function myFunction() {
+            var x = document.getElementById("myInput");
+            if (x.type === "password") {
+            x.type = "text";
+            } else {
+            x.type = "password";
+            }
+        }
+    </script>
+    <input type="checkbox" onclick="myFunction()">Show Password
+    <br><br>
     <input type="submit" value="Sign Up"/>
     {% if message %}
         <div>{{ message }}</div>

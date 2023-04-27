@@ -11,7 +11,19 @@ Sign in
     <p>Username</p>
     <input type="text" name="username" placeholder="Your username" maxlength="16" required/><br/>
     <p>Password</p>
-    <input type="password" name="password" placeholder="Your password" maxlength="16" required/><br/>
+    <input type="password" name="password" placeholder="Your password" id="myInput" maxlength="16" required/><br/>
+    <script>
+        function myFunction() {
+            var x = document.getElementById("myInput");
+            if (x.type === "password") {
+            x.type = "text";
+            } else {
+            x.type = "password";
+            }
+        }
+    </script>
+    <input type="checkbox" onclick="myFunction()">Show Password
+    <br><br>
     <input type="submit" value="Log In"/>
     {% if message %}
     <div>{{ message }}</div>
