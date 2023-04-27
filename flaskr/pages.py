@@ -122,8 +122,8 @@ def make_endpoints(app, backend):
                 message = 'Please Select Files'
                 return render_template('upload.html', message=message)
             if file.filename and allowed_file(file.filename):
-                backend.upload(file,
-                               request.form['wikiname'] + ".txt", current_user.username)  #workaround
+                backend.upload(file, request.form['wikiname'] + ".txt",
+                               current_user.username)  #workaround
                 backend.update_wikiupload(current_user.username,
                                           request.form['wikiname'])
                 message = 'Uploaded Successfully'

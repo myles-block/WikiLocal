@@ -147,13 +147,13 @@ def test_upload(backend, fake_blob):
         file.name = 'uploaded_fake_page.txt'
 
         # Calling the upload method by mocking the file path
-        backend.upload(file, 'uploaded_fake_page.txt')
+        backend.upload(file, 'uploaded_fake_page.txt', "fake_author")
 
         # Checking the calls to the backend and fake_blob
         backend.info_bucket.blob.assert_called_once_with(
             'uploaded_fake_page.txt')
         fake_blob.upload_from_string.assert_called_once_with(
-            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
+            '{"wiki_page": "uploaded_fake_page.txt", "author": "fake_author", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
             content_type='application/json')
 
 
@@ -559,6 +559,7 @@ def test_update_metadata_with_comments(backend, fake_blob):
 
     expected = {
         "wiki_page": "fake_page.txt",
+        "author": "fake_author",
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
@@ -764,6 +765,7 @@ def test_update_page_second_upvote(backend, fake_blob):
 
             expected = {
                 "wiki_page": "uploaded_fake_page.txt",
+                "author": "fake_author",
                 "content": "fake page content",
                 "date_created": "1111-11-11",
                 "upvotes": 0,
