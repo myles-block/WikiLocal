@@ -128,7 +128,7 @@ class Backend:
 
         return page_names
 
-    def upload(self, file, filename):
+    def upload(self, file, filename, author_name):
         ''' Adds data to the content bucket 
          file : path of the file 
          filename : name of the file user selected
@@ -141,6 +141,7 @@ class Backend:
         # Set up a dictionary containing all the wiki-page's metadata, which will then be converted to a JSON file to be stored.
         metadata = {
             'wiki_page': filename,
+            'author': author_name,
             'content': file.read().decode('utf-8'),
             'date_created': date,
             'upvotes': 0,

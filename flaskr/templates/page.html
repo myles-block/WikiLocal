@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="../static/page.css" />
 </head>
 <h3> {{ name }}</h3>
+    <h4>Author: <a href={{ url_for('others_account', user_name = content.author)}}>{{content.author}}</a></h4>
     <p class="content">{{content.content}}</p>
     {% if current_user.is_authenticated %}
     <p class ='help'>Did you find this page helpful?</p>

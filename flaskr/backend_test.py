@@ -147,13 +147,13 @@ def test_upload(backend, fake_blob):
         file.name = 'uploaded_fake_page.txt'
 
         # Calling the upload method by mocking the file path
-        backend.upload(file, 'uploaded_fake_page.txt')
+        backend.upload(file, 'uploaded_fake_page.txt', "fake_author")
 
         # Checking the calls to the backend and fake_blob
         backend.info_bucket.blob.assert_called_once_with(
             'uploaded_fake_page.txt')
         fake_blob.upload_from_string.assert_called_once_with(
-            '{"wiki_page": "uploaded_fake_page.txt", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
+            '{"wiki_page": "uploaded_fake_page.txt", "author": "fake_author", "content": "fake page content", "date_created": "1111-11-11", "upvotes": 0, "who_upvoted": [], "downvotes": 0, "who_downvoted": [], "comments": []}',
             content_type='application/json')
 
 
@@ -332,6 +332,7 @@ def test_title_content_non_empty(backend):
     backend.get_wiki_page = MagicMock(
         return_value={
             "wiki_page": "page1.txt",
+            "author": "fake_user",
             "content": "fake page1 content",
             "date_created": "1999-10-12",
             "upvotes": 0,
@@ -379,6 +380,7 @@ def test_title_date_non_empty(backend):
     backend.get_wiki_page = MagicMock(
         return_value={
             "wiki_page": "page1.txt",
+            "author": "fake_user",
             "content": "fake page1 content",
             "date_created": "1999-10-12",
             "upvotes": 0,
@@ -537,6 +539,7 @@ def test_update_metadata_with_comments(backend, fake_blob):
     '''
     fake_page_metadata = {
         "wiki_page": "fake_page.txt",
+        "author": "fake_author",
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
@@ -556,6 +559,7 @@ def test_update_metadata_with_comments(backend, fake_blob):
 
     expected = {
         "wiki_page": "fake_page.txt",
+        "author": "fake_author",
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
@@ -584,6 +588,7 @@ def test_update_metadata_with_comments_same_user(backend, fake_blob):
     '''
     fake_page_metadata = {
         "wiki_page": "fake_page.txt",
+        "author": "fake_author",
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
@@ -606,6 +611,8 @@ def test_update_metadata_with_comments_same_user(backend, fake_blob):
     expected = {
         "wiki_page":
             "fake_page.txt",
+        "author":
+            "fake_author",
         "content":
             "fake page content",
         "date_created":
@@ -639,6 +646,7 @@ def test_update_metadata_with_multiple_comments(backend, fake_blob):
     '''
     fake_page_metadata = {
         "wiki_page": "fake_page.txt",
+        "author": "fake_author",
         "content": "fake page content",
         "date_created": "1999-10-12",
         "upvotes": 0,
@@ -661,6 +669,8 @@ def test_update_metadata_with_multiple_comments(backend, fake_blob):
     expected = {
         "wiki_page":
             "fake_page.txt",
+        "author":
+            "fake_author",
         "content":
             "fake page content",
         "date_created":
@@ -693,6 +703,7 @@ def test_update_page_first_upvote(backend, fake_blob):
         # Setting it's return value as an actual dictionary representing a page's metadata.
         mock_get_wiki.return_value = {
             "wiki_page": "uploaded_fake_page.txt",
+            "author": "fake_author",
             "content": "fake page content",
             "date_created": "1111-11-11",
             "upvotes": 0,
@@ -709,6 +720,7 @@ def test_update_page_first_upvote(backend, fake_blob):
 
             expected = {
                 "wiki_page": "uploaded_fake_page.txt",
+                "author": "fake_author",
                 "content": "fake page content",
                 "date_created": "1111-11-11",
                 "upvotes": 1,
@@ -736,6 +748,7 @@ def test_update_page_second_upvote(backend, fake_blob):
         # Setting it's return value as an actual dictionary representing a page's metadata.
         mock_get_wiki.return_value = {
             "wiki_page": "uploaded_fake_page.txt",
+            "author": "fake_author",
             "content": "fake page content",
             "date_created": "1111-11-11",
             "upvotes": 1,
@@ -752,6 +765,7 @@ def test_update_page_second_upvote(backend, fake_blob):
 
             expected = {
                 "wiki_page": "uploaded_fake_page.txt",
+                "author": "fake_author",
                 "content": "fake page content",
                 "date_created": "1111-11-11",
                 "upvotes": 0,
@@ -779,6 +793,7 @@ def test_update_page_upvote_with_existing_downvote(backend, fake_blob):
         # Setting it's return value as an actual dictionary representing a page's metadata.
         mock_get_wiki.return_value = {
             "wiki_page": "uploaded_fake_page.txt",
+            "author": "fake_author",
             "content": "fake page content",
             "date_created": "1111-11-11",
             "upvotes": 0,
@@ -795,6 +810,7 @@ def test_update_page_upvote_with_existing_downvote(backend, fake_blob):
 
             expected = {
                 "wiki_page": "uploaded_fake_page.txt",
+                "author": "fake_author",
                 "content": "fake page content",
                 "date_created": "1111-11-11",
                 "upvotes": 0,
@@ -822,6 +838,7 @@ def test_update_page_downvote_with_two_existing_downvote(backend, fake_blob):
         # Setting it's return value as an actual dictionary representing a page's metadata.
         mock_get_wiki.return_value = {
             "wiki_page": "uploaded_fake_page.txt",
+            "author": "fake_author",
             "content": "fake page content",
             "date_created": "1111-11-11",
             "upvotes": 0,
@@ -838,6 +855,7 @@ def test_update_page_downvote_with_two_existing_downvote(backend, fake_blob):
 
             expected = {
                 "wiki_page": "uploaded_fake_page.txt",
+                "author": "fake_author",
                 "content": "fake page content",
                 "date_created": "1111-11-11",
                 "upvotes": 0,
@@ -868,6 +886,7 @@ def test_update_page_one_upvote_one_downvote_with_two_different_users(
         # Setting it's return value as an actual dictionary representing a page's metadata.
         mock_get_wiki.return_value = {
             "wiki_page": "uploaded_fake_page.txt",
+            "author": "fake_author",
             "content": "fake page content",
             "date_created": "1111-11-11",
             "upvotes": 0,
@@ -884,6 +903,7 @@ def test_update_page_one_upvote_one_downvote_with_two_different_users(
 
             expected = {
                 "wiki_page": "uploaded_fake_page.txt",
+                "author": "fake_author",
                 "content": "fake page content",
                 "date_created": "1111-11-11",
                 "upvotes": 1,
